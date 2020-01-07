@@ -10,6 +10,6 @@
 	},
 	"repository": {
 		"type" : "git",
-		"url" : "git+https://github.com/Luxulicious/SOA/tree/canary.git"
+		"url" : "https://github.com/Luxulicious/SOA.git"
 	}
 }
