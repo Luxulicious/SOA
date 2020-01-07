@@ -1,0 +1,12 @@
+﻿using SOA.Base;
+using UnityEditor;
+using $USING$;
+
+namespace SOA.Common.CustomTypes
+{
+    [CustomPropertyDrawer(typeof($TYPENAME$Reference))]
+    public class
+        $TYPENAME$ReferenceDrawer : ReferenceDrawer<$TYPENAME$Reference, $TYPENAME$Variable, $TYPE$, $TYPENAME$UnityEvent, $TYPENAME$$TYPENAME$UnityEvent>
+    {
+    }
+}

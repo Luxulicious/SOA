@@ -1,0 +1,21 @@
+﻿using System;
+using UnityEngine.Events;
+using $USING$;
+
+namespace SOA.Common.CustomTypes
+{
+    [Serializable]
+    public class $TYPENAME$UnityEvent : UnityEvent<$TYPE$>
+    {
+    }
+
+    [Serializable]
+    public class $TYPENAME$$TYPENAME$UnityEvent : UnityEvent<$TYPE$, $TYPE$>
+    {
+    }
+
+    [Serializable]
+    public class $TYPENAME$ReferenceUnityEvent : UnityEvent<$TYPENAME$Reference>
+    {
+    }
+}

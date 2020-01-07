@@ -1,0 +1,14 @@
+﻿using SOA.Base;
+using UnityEditor;
+using $USING$;
+
+namespace SOA.Common.CustomTypes
+{
+
+    [CustomEditor(typeof($TYPENAME$ReferenceListVariable))]
+    public class $TYPENAME$ReferenceListVariableEditor : VariableReferenceListEditor<$TYPENAME$ReferenceListVariable,
+        $TYPENAME$ReferenceList,
+        $TYPENAME$Reference, $TYPENAME$Variable, $TYPE$, $TYPENAME$UnityEvent, $TYPENAME$$TYPENAME$UnityEvent, $TYPENAME$ReferenceUnityEvent>
+    {
+    }
+}
