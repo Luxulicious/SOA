@@ -1,0 +1,11 @@
+{
+	"name" : "com.TheLuxGames.SOA",
+	"version" : "0.1a",
+	"displayName" : "Scriptable Object Architecture (SOA)",
+	"description" : "T.b.d."
+	"unity" : "2019.2"
+	"author": 
+	{
+		"name": "Tom Ruijs",
+	}
+}
