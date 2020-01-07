@@ -7,5 +7,9 @@
 	"author": 
 	{
 		"name": "Tom Ruijs"
+	},
+	"repository": {
+		"type" : "git",
+		"url" : "https://github.com/Luxulicious/SOA.git"
 	}
 }
