@@ -187,44 +187,6 @@ namespace SOA.Generation
             }
 
             return allTypeNames;
-            /*
-            var executingAssembly = Assembly.GetExecutingAssembly();
-            Func<Type, bool> typePredicate = x =>
-                !x.IsAbstract &&
-                !x.ContainsGenericParameters;
-            var executingTypeFullNames = executingAssembly.GetTypes().Where(typePredicate).Select(x => x.FullName)
-                .Distinct();
-            var referencedTypeFullNames = (from assemblyName in executingAssembly.GetReferencedAssemblies()
-                select Assembly.Load(assemblyName)
-                into assembly
-                from type in assembly.GetTypes().Where(typePredicate)
-                select type.FullName);
-            var primitiveTypeFullNames = 0.GetType().Assembly.GetTypes().Where(typePredicate).Select(x => x.FullName)
-                .Distinct();
-            var allTypeFullNames =
-                executingTypeFullNames.Concat(referencedTypeFullNames).Concat(primitiveTypeFullNames);
-            var allowedTypeFullNames = allTypeFullNames.Where(x =>
-            {
-                foreach (var namespaceToExclude in _namespacesToExclude)
-                {
-                    if (x.Contains(namespaceToExclude))
-                        return false;
-                }
-
-                return true;
-            });
-            var allowedTypeNames = new Dictionary<string, string>();
-            foreach (var allowedTypeFullName in allowedTypeFullNames)
-            {
-                var key = allowedTypeFullName.Contains(".")
-                    ? allowedTypeFullName.Substring(allowedTypeFullName.LastIndexOf(".") + 1)
-                    : allowedTypeFullName;
-                var value = allowedTypeFullName;
-                allowedTypeNames[key] = value;
-            }
-
-            return allowedTypeNames;
-            */
         }
     }
 }

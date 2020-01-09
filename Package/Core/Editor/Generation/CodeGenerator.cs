@@ -17,18 +17,22 @@ public static class CodeGenerator
 
     public struct PathAndNameDataEntry
     {
+        private static string _packageName = "com.theluxgames.soa";
         public string TargetDirectory { get; set; }
         public string TemplateName { get; set; }
         public string TargetFileName { get; set; }
 
         public string GetTargetFilePath(Type t)
         {
-            return TargetDirectory + "/" + string.Format(TargetFileName, t.Name != null ? t.Name : t.FullName.Contains(".") ? t.FullName.Substring(t.FullName.LastIndexOf(".")+1) : t.FullName);
+            return TargetDirectory + "/" + string.Format(TargetFileName,
+                       t.Name != null ? t.Name :
+                       t.FullName.Contains(".") ? t.FullName.Substring(t.FullName.LastIndexOf(".") + 1) : t.FullName);
         }
 
         public string GetTemplatePath()
         {
-            return Application.dataPath + "/" + _templatesFolderPath + "/" + TemplateName;
+            return "Packages" + "/" + _packageName + "/" + "Core/Editor/" + _templatesFolderPath + "/" +
+                   TemplateName;
         }
 
         public string GetScriptContents(Type t)
@@ -92,25 +96,29 @@ public static class CodeGenerator
         },
         new PathAndNameDataEntry()
         {
-            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" + "Game Events" ,
+            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
+                              "Game Events",
             TemplateName = "GameEventEditorTemplate",
             TargetFileName = "{0}GameEventEditor.cs"
         },
         new PathAndNameDataEntry()
         {
-            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +  "References" ,
+            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
+                              "References",
             TemplateName = "ReferenceDrawerTemplate",
             TargetFileName = "{0}ReferenceDrawer.cs"
         },
         new PathAndNameDataEntry()
         {
-            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +  "Variables" ,
+            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
+                              "Variables",
             TemplateName = "VariableEditorTemplate",
             TargetFileName = "{0}VariableEditor.cs"
         },
         new PathAndNameDataEntry()
         {
-            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +  "Variables",
+            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
+                              "Variables",
             TemplateName = "ReferenceListVariableEditorTemplate",
             TargetFileName = "{0}ReferenceListVariableEditor.cs"
         },
@@ -148,6 +156,7 @@ public static class CodeGenerator
                 File.WriteAllText(targetFilePath, scriptContents);
             }
         }
+
         AssetDatabase.Refresh();
     }
 }
