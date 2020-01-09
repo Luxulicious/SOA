@@ -31,7 +31,7 @@ public static class CodeGenerator
 
         public string GetTemplatePath()
         {
-            return "Packages" + "/" + _packageName + "/" + "Core/Editor/" + _templatesFolderPath + "/" +
+            return "Packages" + "/"  + _packageName + "/" + "Package/" + "Core/Editor/" + _templatesFolderPath + "/" +
                    TemplateName;
         }
 
