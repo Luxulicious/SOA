@@ -9,8 +9,8 @@ namespace SOA.Base
     //TODO Move these non-"Reference" classes to a seperate file and namespace/class
     public enum Persistence
     {
-        Constant,
-        Variable
+        Variable,
+        Constant
     }
 
     [Serializable]
