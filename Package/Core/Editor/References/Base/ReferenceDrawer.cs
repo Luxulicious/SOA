@@ -110,6 +110,7 @@ namespace SOA.Base
             switch (persistence)
             {
                 case Persistence.Constant:
+                    /*
                     if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
                         if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Variable)
                         {
@@ -118,7 +119,7 @@ namespace SOA.Base
                                 $"{globalValueProperty.objectReferenceValue.name} is referencing a variable. Set reference type to variable or change {globalValueProperty.objectReferenceValue.name} to be used as a constant.",
                                 property.serializedObject.targetObject);
                         }
-
+                    */
                     break;
                 case Persistence.Variable:
                     DrawOnChangeEvents(contentRect, valueRect, isPartOfArray, property);
