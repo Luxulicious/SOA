@@ -29,7 +29,7 @@ namespace SOA.Base
             if (!isPlaying)
                 EditorGUILayout.PropertyField(useAsConstantProperty);
 
-            if (!useAsConstantProperty.boolValue)
+            if (useAsConstantProperty.boolValue)
                 EditorGUILayout.PropertyField(!isPlaying ? defaultValueProperty : runtimeValueProperty,
                     new GUIContent("Constant Value"));
             else
