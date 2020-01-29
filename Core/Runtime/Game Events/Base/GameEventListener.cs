@@ -9,7 +9,7 @@ namespace SOA.Base
     public class GameEventListener
     {
         [SerializeField] private GameEvent _gameEvent;
-        [SerializeField] private List<UnityEvent> _responses;
+        [SerializeField] private UnityEvent _reponses;
 
         public void OnEnable()
         {
@@ -23,7 +23,7 @@ namespace SOA.Base
 
         private void InvokeResponses()
         {
-            _responses.ForEach(x => x.Invoke());
+            _reponses.Invoke();
         }
     }
 
@@ -31,7 +31,7 @@ namespace SOA.Base
         where ESO : GameEvent<E, T> where E : UnityEvent<T>
     {
         [SerializeField] protected ESO _unityEventSO;
-        [SerializeField] protected List<E> _responses;
+        [SerializeField] protected E _responses;
 
         public void OnEnable()
         {
@@ -47,7 +47,7 @@ namespace SOA.Base
 
         private void InvokeResponses(T t0)
         {
-            _responses.ForEach(x => x.Invoke(t0));
+            _responses.Invoke(t0);
         }
     }
 }
