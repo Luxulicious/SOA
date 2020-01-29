@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [CustomEditor(typeof(QuaternionGameEvent))]
-    public class QuaternionGameEventEditor : UnityEventSOEditor<QuaternionGameEvent, QuaternionUnityEvent, Quaternion>
+    public class QuaternionGameEventEditor : GameEventEditor<QuaternionGameEvent, QuaternionUnityEvent, Quaternion>
     {
     }
 }

@@ -5,7 +5,7 @@ using System;
 namespace SOA.Common.Primitives
 {
     [CustomEditor(typeof(DecimalGameEvent))]
-    public class DecimalGameEventEditor : UnityEventSOEditor<DecimalGameEvent, DecimalUnityEvent, decimal>
+    public class DecimalGameEventEditor : GameEventEditor<DecimalGameEvent, DecimalUnityEvent, decimal>
     {
     }
 }

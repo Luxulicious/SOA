@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [CustomEditor(typeof(ColorGameEvent))]
-    public class ColorGameEventEditor : UnityEventSOEditor<ColorGameEvent, ColorUnityEvent, Color>
+    public class ColorGameEventEditor : GameEventEditor<ColorGameEvent, ColorUnityEvent, Color>
     {
     }
 }

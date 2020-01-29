@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [CustomEditor(typeof(Vector3GameEvent))]
-    public class Vector3GameEventEditor : UnityEventSOEditor<Vector3GameEvent, Vector3UnityEvent, Vector3>
+    public class Vector3GameEventEditor : GameEventEditor<Vector3GameEvent, Vector3UnityEvent, Vector3>
     {
     }
 }
