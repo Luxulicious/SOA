@@ -18,7 +18,6 @@ Add reference to listvariables so they can be used from a monobehaviour
 
 Events:
 Add a standard component for event listeners
-Change name of game event listener reference to be not "Unity Event SO"
 Responses in game event listener doesn't have to be a list
 Find a way for a game event listener to auto (un)subscribe whenever the reference is changed (probably most easily accomplished via propertydrawer)
 
