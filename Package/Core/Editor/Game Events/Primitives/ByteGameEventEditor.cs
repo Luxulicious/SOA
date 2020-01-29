@@ -5,7 +5,7 @@ using System;
 namespace SOA.Common.Primitives
 {
     [CustomEditor(typeof(ByteGameEvent))]
-    public class ByteGameEventEditor : UnityEventSOEditor<ByteGameEvent, ByteUnityEvent, byte>
+    public class ByteGameEventEditor : GameEventEditor<ByteGameEvent, ByteUnityEvent, byte>
     {
     }
 }

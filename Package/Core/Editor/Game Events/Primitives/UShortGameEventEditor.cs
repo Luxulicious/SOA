@@ -5,7 +5,7 @@ using System;
 namespace SOA.Common.Primitives
 {
     [CustomEditor(typeof(UShortGameEvent))]
-    public class UShortGameEventEditor : UnityEventSOEditor<UShortGameEvent, UShortUnityEvent, ushort>
+    public class UShortGameEventEditor : GameEventEditor<UShortGameEvent, UShortUnityEvent, ushort>
     {
     }
 }
