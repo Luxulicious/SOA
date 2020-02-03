@@ -8,26 +8,23 @@ namespace SOA.Base
     [Serializable]
     public class GameEventListener
     {
-        [SerializeField] private GameEvent _gameEvent;
-        [SerializeField] private UnityEvent _reponses;
+        [SerializeField] protected GameEvent _gameEvent;
+        [SerializeField] protected UnityEvent _responses;
+        protected GameEvent _prevGameEvent = null;
 
-        public void OnEnable()
+        public void InvokeResponses()
         {
-            _gameEvent.AddListener(InvokeResponses);
+            _responses.Invoke();
         }
 
-        public void OnDisable()
+        public GameEvent PrevGameEvent
         {
-            _gameEvent.RemoveListener(InvokeResponses);
-        }
-
-        private void InvokeResponses()
-        {
-            _reponses.Invoke();
+            get => _prevGameEvent;
+            set => _prevGameEvent = value;
         }
     }
 
-    public abstract class EventListener<ESO, E, T>
+    public abstract class GameEventListener<ESO, E, T>
         where ESO : GameEvent<E, T> where E : UnityEvent<T>
     {
         [SerializeField] protected ESO _unityEventSO;

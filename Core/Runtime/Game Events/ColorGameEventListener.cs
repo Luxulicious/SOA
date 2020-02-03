@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [Serializable]
-    public class ColorGameEventListener : EventListener<ColorGameEvent, ColorUnityEvent, Color>
+    public class ColorGameEventListener : GameEventListener<ColorGameEvent, ColorUnityEvent, Color>
     {
     }
 }

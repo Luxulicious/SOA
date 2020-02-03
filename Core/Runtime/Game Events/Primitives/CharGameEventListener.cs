@@ -5,7 +5,7 @@ using System;
 namespace SOA.Common.Primitives
 {
     [Serializable]
-    public class CharGameEventListener : EventListener<CharGameEvent, CharUnityEvent, char>
+    public class CharGameEventListener : GameEventListener<CharGameEvent, CharUnityEvent, char>
     {
     }
 }

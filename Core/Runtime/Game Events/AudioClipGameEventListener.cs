@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [Serializable]
-    public class AudioClipGameEventListener : EventListener<AudioClipGameEvent, AudioClipUnityEvent, AudioClip>
+    public class AudioClipGameEventListener : GameEventListener<AudioClipGameEvent, AudioClipUnityEvent, AudioClip>
     {
     }
 }

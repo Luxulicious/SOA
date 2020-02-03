@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [Serializable]
-    public class QuaternionGameEventListener : EventListener<QuaternionGameEvent, QuaternionUnityEvent, Quaternion>
+    public class QuaternionGameEventListener : GameEventListener<QuaternionGameEvent, QuaternionUnityEvent, Quaternion>
     {
     }
 }

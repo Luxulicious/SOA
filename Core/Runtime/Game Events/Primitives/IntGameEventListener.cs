@@ -8,7 +8,7 @@ using UnityEngine.Events;
 namespace SOA.Common.Primitives
 {
     [Serializable]
-    public class IntGameEventListener : EventListener<IntGameEvent, IntUnityEvent, int>
+    public class IntGameEventListener : GameEventListener<IntGameEvent, IntUnityEvent, int>
     {
     }
 }
