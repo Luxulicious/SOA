@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [Serializable]
-    public class Vector3GameEventListener : EventListener<Vector3GameEvent, Vector3UnityEvent, Vector3>
+    public class Vector3GameEventListener : GameEventListener<Vector3GameEvent, Vector3UnityEvent, Vector3>
     {
     }
 }

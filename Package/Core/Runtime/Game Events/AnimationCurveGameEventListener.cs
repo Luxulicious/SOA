@@ -5,7 +5,7 @@ using UnityEngine;
 namespace SOA.Common.UnityEngine
 {
     [Serializable]
-    public class AnimationCurveGameEventListener : EventListener<AnimationCurveGameEvent, AnimationCurveUnityEvent, AnimationCurve>
+    public class AnimationCurveGameEventListener : GameEventListener<AnimationCurveGameEvent, AnimationCurveUnityEvent, AnimationCurve>
     {
     }
 }
