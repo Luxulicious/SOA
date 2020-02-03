@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Reflection;
 using UnityEditor;
 
 namespace SOA.Base
@@ -22,6 +23,22 @@ namespace SOA.Base
         public static float FindPropertyRelativeAndGetHeight(this SerializedProperty property, string propertyPath)
         {
             return EditorGUI.GetPropertyHeight(property.FindPropertyRelative(propertyPath));
+        }
+
+        public static object GetValue(this SerializedProperty property)
+        {
+            var parentType = property.serializedObject.targetObject.GetType();
+            var fi =
+                parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
+            return fi.GetValue(property.serializedObject.targetObject);
+        }
+
+        public static void SetValue(this SerializedProperty property, object value)
+        {
+            var parentType = property.serializedObject.targetObject.GetType();
+            var
+                fi = parentType.GetField(property.propertyPath); //this FieldInfo contains the type.
+            fi.SetValue(property.serializedObject.targetObject, value);
         }
     }
 }
