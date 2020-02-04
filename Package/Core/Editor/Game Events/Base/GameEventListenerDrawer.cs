@@ -8,11 +8,16 @@ using Object = UnityEngine.Object;
 [CustomPropertyDrawer(typeof(GameEventListener))]
 public class GameEventListenerDrawer : PropertyDrawer
 {
+    //TODO Get field info dynamically
+    private static readonly string _responsesPropertyPath = "_responses";
+    private static readonly string _gameEventPropertyPath = "_gameEvent";
+    private static readonly string _prevGamePropertyPath = "_prevGameEvent";
+
     public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
     {
-        var responsesProperty = property.FindPropertyRelative("_responses");
-        var gameEventProperty = property.FindPropertyRelative("_gameEvent");
-        var prevGameEventProperty = property.FindPropertyRelative("_prevGameEvent");
+        var responsesProperty = property.FindPropertyRelative(_responsesPropertyPath);
+        var gameEventProperty = property.FindPropertyRelative(_gameEventPropertyPath);
+        var prevGameEventProperty = property.FindPropertyRelative(_prevGamePropertyPath);
 
         Object gameEventValue = null;
         try
@@ -52,7 +57,6 @@ public class GameEventListenerDrawer : PropertyDrawer
                     var gameEvent = gameEventValue as GameEvent;
                     gameEvent.AddListener(gameEventListener.InvokeResponses);
                 }
-
                 gameEventListener.PrevGameEvent = gameEventValue as GameEvent;
             }
         }
@@ -72,8 +76,8 @@ public class GameEventListenerDrawer : PropertyDrawer
 
     public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
     {
-        var responsesProperty = property.FindPropertyRelative("_responses");
-        var gameEventProperty = property.FindPropertyRelative("_gameEvent");
+        var responsesProperty = property.FindPropertyRelative(_responsesPropertyPath);
+        var gameEventProperty = property.FindPropertyRelative(_gameEventPropertyPath);
         var responsesPropertyHeight = EditorGUI.GetPropertyHeight(responsesProperty);
         var gameEventPropertyHeight = EditorGUI.GetPropertyHeight(gameEventProperty);
         var height = responsesPropertyHeight + gameEventPropertyHeight + 2f;
