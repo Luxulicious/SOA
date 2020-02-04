@@ -39,9 +39,9 @@ namespace SOA.Base
             if (eventsFoldedOutProperty.boolValue)
             {
                 var onAddedProperty = referenceListProperty.FindPropertyRelative(_onAddedPropertyPath);
-                EditorGUILayout.PropertyField(onAddedProperty);
+                EditorGUILayout.PropertyField(onAddedProperty, true);
                 var onRemovedProperty = referenceListProperty.FindPropertyRelative(_onRemovedPropertyPath);
-                EditorGUILayout.PropertyField(onRemovedProperty);
+                EditorGUILayout.PropertyField(onRemovedProperty, true);
             }
 
             serializedObject.ApplyModifiedProperties();

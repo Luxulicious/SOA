@@ -12,10 +12,10 @@ namespace SOA.Base
         [SerializeField] private Persistence _persistence;
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
-        private readonly E _onChangeEvent = new E();
+        protected E _onChangeEvent = new E();
 
         [Tooltip("Invokes an event with the previous value and the current value as arguments")] [SerializeField]
-        private readonly EE _onChangeWithHistoryEvent = new EE();
+        protected EE _onChangeWithHistoryEvent = new EE();
 
         public T DefaultValue
         {

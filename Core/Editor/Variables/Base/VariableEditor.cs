@@ -27,19 +27,22 @@ namespace SOA.Base
             var isPlaying = Application.isPlaying;
 
             if (!isPlaying)
-                EditorGUILayout.PropertyField(useAsConstantProperty);
+                EditorGUILayout.PropertyField(useAsConstantProperty, true);
 
             if (useAsConstantProperty.boolValue)
                 EditorGUILayout.PropertyField(!isPlaying ? defaultValueProperty : runtimeValueProperty,
-                    new GUIContent("Constant Value"));
+                    new GUIContent("Constant Value"), true);
             else
             {
                 EditorGUI.BeginDisabledGroup(isPlaying);
-                EditorGUILayout.PropertyField(defaultValueProperty, new GUIContent("Default Value"));
+                EditorGUILayout.PropertyField(defaultValueProperty, new GUIContent("Default Value"), true);
                 EditorGUI.EndDisabledGroup();
                 EditorGUI.BeginDisabledGroup(!isPlaying);
-                EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent("Runtime Value"));
+                EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent("Runtime Value"), true);
                 EditorGUI.EndDisabledGroup();
+
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeEvent"), true);
+                EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeWithHistoryEvent"), true);
 
                 var v = target as V;
                 if (GUILayout.Button("Invoke On Change Event")) v.ForceInvokeOnChangeEvent();
