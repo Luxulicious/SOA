@@ -28,8 +28,9 @@ namespace SOA.Base
         public static object GetValue(this SerializedProperty property)
         {
             var parentType = property.serializedObject.targetObject.GetType();
-            var fi =
-                parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
+            var fi = parentType.GetField(property.propertyPath);
+            if (fi == null)
+                fi = parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
             return fi.GetValue(property.serializedObject.targetObject);
         }
 
