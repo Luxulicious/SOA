@@ -24,22 +24,22 @@ namespace SOA.Base
         }
     }
 
-    public abstract class GameEventListener<ESO, E, T>
-        where ESO : GameEvent<E, T> where E : UnityEvent<T>
+    public abstract class GameEventListener<GE, E, T>
+        where GE : GameEvent<E, T> where E : UnityEvent<T>
     {
-        [SerializeField] protected ESO _unityEventSO;
+        [SerializeField] protected GE _gameEvent;
         [SerializeField] protected E _responses;
 
         public void OnEnable()
         {
-            if (_unityEventSO == null) return;
-            _unityEventSO.AddListener(InvokeResponses);
+            if (_gameEvent == null) return;
+            _gameEvent.AddListener(InvokeResponses);
         }
 
         public void OnDisable()
         {
-            if (_unityEventSO == null) return;
-            _unityEventSO.RemoveListener(InvokeResponses);
+            if (_gameEvent == null) return;
+            _gameEvent.RemoveListener(InvokeResponses);
         }
 
         private void InvokeResponses(T t0)
