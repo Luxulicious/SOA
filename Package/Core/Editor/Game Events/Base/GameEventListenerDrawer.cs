@@ -63,10 +63,10 @@ public class GameEventListenerDrawer : PropertyDrawer
         var contentRect = EditorGUI.PrefixLabel(position, label);
         var gameEventRect = new Rect(contentRect.x, contentRect.y, contentRect.width,
             EditorGUI.GetPropertyHeight(gameEventProperty));
-        EditorGUI.PropertyField(gameEventRect, gameEventProperty, GUIContent.none);
+        EditorGUI.PropertyField(gameEventRect, gameEventProperty, GUIContent.none, true);
         EditorGUI.PropertyField(
             new Rect(gameEventRect.x, gameEventRect.y + gameEventRect.height + 2f, contentRect.width,
-                EditorGUI.GetPropertyHeight(responsesProperty)), responsesProperty);
+                EditorGUI.GetPropertyHeight(responsesProperty)), responsesProperty, true);
         EditorGUI.EndProperty();
     }
 
