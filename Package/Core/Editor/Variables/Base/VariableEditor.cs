@@ -1,4 +1,6 @@
-﻿using UnityEditor;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Events;
@@ -40,7 +42,7 @@ namespace SOA.Base
                 EditorGUI.BeginDisabledGroup(!isPlaying);
                 EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent("Runtime Value"), true);
                 EditorGUI.EndDisabledGroup();
-                
+
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeEvent"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeWithHistoryEvent"), true);
 
@@ -51,6 +53,23 @@ namespace SOA.Base
                 EditorGUI.EndDisabledGroup();
             }
 
+            var decoratorsProperty = serializedObject.FindProperty("_decorators");
+            var decorators = (decoratorsProperty.GetValue() as ScriptableObject[]).ToList();
+            var decoratorsToRemove = new List<ScriptableObject>();
+            foreach (var decorator in decorators)
+            {
+                if (!decorator is Decorator<T>)
+                    decoratorsToRemove.Add(decorator);
+            }
+            foreach (var decorator in decoratorsToRemove)
+            {
+                Debug.LogError($"{decorator.name} is not a decorator!");
+                decorators.Remove(decorator);
+            }
+            decoratorsProperty.SetValue(decorators.ToArray());
+
+
+            EditorGUILayout.PropertyField(decoratorsProperty, true);
 
             serializedObject.ApplyModifiedProperties();
         }

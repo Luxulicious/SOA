@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
 namespace SOA.Base
 {
     public abstract class Variable<T, E, EE> : ScriptableObject
-        where EE : UnityEvent<T, T>, new() where E : UnityEvent<T>, new()
+        where EE : UnityEvent<T, T>, new()
+        where E : UnityEvent<T>, new()
     {
         [SerializeField] private T _defaultValue;
         [SerializeField] private T _runtimeValue;
@@ -16,6 +18,8 @@ namespace SOA.Base
 
         [Tooltip("Invokes an event with the previous value and the current value as arguments")] [SerializeField]
         protected EE _onChangeWithHistoryEvent = new EE();
+
+        [SerializeField] protected ScriptableObject[] _decorators;
 
         public T DefaultValue
         {
@@ -47,6 +51,12 @@ namespace SOA.Base
                             return;
                         _onChangeEvent.Invoke(_runtimeValue);
                         _onChangeWithHistoryEvent.Invoke(_runtimeValue, prev);
+                        foreach (var decorator in _decorators)
+                        {
+                            (decorator as IDecorator<T>)?.OnChange(_runtimeValue);
+                            (decorator as IDecorator<T>)?.OnChangeWithHistory(_runtimeValue, prev);
+                        }
+
                         break;
                     }
 
