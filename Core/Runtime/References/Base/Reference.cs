@@ -69,7 +69,6 @@ namespace SOA.Base
         [SerializeField, HideInInspector] private V _prevGlobalValue;
         [SerializeField, HideInInspector] private bool _foldOutEvents = false;
 
-        private void AddAutoListeners(V variable)
         public Reference()
         {
         }
@@ -79,6 +78,8 @@ namespace SOA.Base
             _localValue = value;
             _scope = Scope.Local;
         }
+        
+        private void AddAutoListeners(V variable)
         {
             if (variable == null) return;
             variable.AddListenerFromOnChangeEvent(InvokeOnChangeResponses);
