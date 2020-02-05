@@ -2,6 +2,7 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using Object = System.Object;
 
 namespace SOA.Base
 {
@@ -18,8 +19,8 @@ namespace SOA.Base
         private static readonly string _persistencePropertyPath = "_persistence";
         private static readonly string _scopePropertyPath = "_scope";
         private static readonly string _localValuePropertyPath = "_localValue";
-
         private static readonly string _globalValuePropertyPath = "_globalValue";
+        private static readonly string _prevGlobalValuePropertyPath = "_prevGlobalValue";
 
         private static readonly string _onValueChangedPropertyPath = "_onValueChangedEvent";
         private static readonly string _onValueChangedWithHistoryPropertyPath = "_onValueChangedWithHistoryEvent";
@@ -123,6 +124,7 @@ namespace SOA.Base
                     break;
                 case Persistence.Variable:
                     DrawOnChangeEvents(contentRect, valueRect, isPartOfArray, property);
+                    //Throw warning if reference is referencing a constant while referring to it as a variable
                     if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
                         if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
                         {
@@ -131,14 +133,67 @@ namespace SOA.Base
                                 $"{globalValueProperty.objectReferenceValue.name} is referencing a constant. Set reference type to constant or change {globalValueProperty.objectReferenceValue.name} to be used as a variable.",
                                 property.serializedObject.targetObject);
                         }
-
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
 
+            AutoListen(property);
+
             EditorGUI.indentLevel = originalIndentLevel;
             EditorGUI.EndProperty();
+        }
+
+        private void AutoListen(SerializedProperty property)
+        {
+            var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
+            var prevGlobalValueProperty = property.FindPropertyRelative(_prevGlobalValuePropertyPath);
+            Object globalValueValue = null;
+            try
+            {
+                globalValueValue = globalValueProperty.objectReferenceValue == null
+                    ? null
+                    : globalValueProperty.objectReferenceValue;
+            }
+            catch (NullReferenceException)
+            {
+            }
+
+            Object prevGlobalValueValue = null;
+            try
+            {
+                prevGlobalValueValue = prevGlobalValueProperty.objectReferenceValue == null
+                    ? null
+                    : prevGlobalValueProperty.objectReferenceValue;
+            }
+            catch (NullReferenceException)
+            {
+            }
+
+            if (property.GetValue() is Reference<V, T, E, EE> reference)
+            {
+                if (reference.PrevGlobalValue != (V) globalValueValue)
+                {
+                    if (reference.PrevGlobalValue != null)
+                    {
+                        var prevGlobalValue = reference.PrevGlobalValue;
+                        if (prevGlobalValue != null)
+                            reference.RemoveAutoListeners(prevGlobalValue);
+                    }
+
+                    if (globalValueValue != null)
+                    {
+                        var globalValue = globalValueValue as V;
+                        reference.AddAutoListeners(globalValue);
+                        
+                    }
+                    if(globalValueValue != null)
+                        reference.PrevGlobalValue = globalValueValue as V;
+                    else
+                        reference.PrevGlobalValue = null;
+
+                }
+            }
         }
 
         private static Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect, Rect contentRect)
@@ -183,7 +238,7 @@ namespace SOA.Base
                     onValueChangedRect = EditorGUI.IndentedRect(onValueChangedRect);
                     //EditorGUI.DrawRect(onValueChangedRect, Color.cyan);
                     EditorGUI.PropertyField(onValueChangedRect, onValueChangedProp,
-                        new GUIContent(onValueChangedProp.displayName));
+                        new GUIContent(onValueChangedProp.displayName), true);
 
                     var onValueChangedWithHistoryProp =
                         property.FindPropertyRelative(_onValueChangedWithHistoryPropertyPath);
@@ -195,7 +250,7 @@ namespace SOA.Base
                     onValueChangedWithHistoryRect = EditorGUI.IndentedRect(onValueChangedWithHistoryRect);
                     //EditorGUI.DrawRect(onValueChangedWithHistoryRect, Color.green);
                     EditorGUI.PropertyField(onValueChangedWithHistoryRect, onValueChangedWithHistoryProp,
-                        new GUIContent(onValueChangedWithHistoryProp.displayName));
+                        new GUIContent(onValueChangedWithHistoryProp.displayName), true);
                 }
             }
         }

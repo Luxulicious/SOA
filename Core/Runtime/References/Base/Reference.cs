@@ -40,8 +40,8 @@ namespace SOA.Base
 
     public abstract class Reference
     {
-        [SerializeField] protected Scope _scope;
-        [SerializeField] protected Persistence _persistence;
+        [SerializeField] protected Scope _scope = Scope.Global;
+        [SerializeField] protected Persistence _persistence = Persistence.Variable;
 
         public Scope Scope
         {
@@ -56,7 +56,7 @@ namespace SOA.Base
         }
     }
 
-    public abstract class Reference<V, T, E, EE> : Reference, ISerializationCallbackReceiver
+    public abstract class Reference<V, T, E, EE> : Reference
         where V : Variable<T, E, EE>
         where E : UnityEvent<T>, new()
         where EE : UnityEvent<T, T>, new()
@@ -69,7 +69,6 @@ namespace SOA.Base
         [SerializeField, HideInInspector] private V _prevGlobalValue;
         [SerializeField, HideInInspector] private bool _foldOutEvents = false;
 
-        private void AddAutoListeners(V variable)
         public Reference()
         {
         }
@@ -79,13 +78,15 @@ namespace SOA.Base
             _localValue = value;
             _scope = Scope.Local;
         }
+
+        public void AddAutoListeners(V variable)
         {
             if (variable == null) return;
-            variable.AddListenerFromOnChangeEvent(InvokeOnChangeResponses);
-            variable.AddListenerFromOnChangeWithHistoryEvent(InvokeOnValueChangeWithHistoryResponses);
+            variable.AddListenerToOnChangeEvent(InvokeOnChangeResponses);
+            variable.AddListenerToOnChangeWithHistoryEvent(InvokeOnValueChangeWithHistoryResponses);
         }
 
-        private void RemoveAutoListeners(V variable)
+        public void RemoveAutoListeners(V variable)
         {
             if (variable == null) return;
             variable.RemoveListenerFromOnChangeEvent(InvokeOnChangeResponses);
@@ -100,6 +101,12 @@ namespace SOA.Base
         private void InvokeOnValueChangeWithHistoryResponses(T currentValue, T previousValue)
         {
             _onValueChangedWithHistoryEvent?.Invoke(currentValue, previousValue);
+        }
+
+        public V PrevGlobalValue
+        {
+            get { return _prevGlobalValue; }
+            set { _prevGlobalValue = value; }
         }
 
         public V GlobalValue
@@ -163,6 +170,7 @@ namespace SOA.Base
             }
         }
 
+        /*
         public void OnBeforeSerialize()
         {
         }
@@ -188,6 +196,7 @@ namespace SOA.Base
                 _prevGlobalValue = null;
             }
         }
+        */
 
         public bool EqualsValue(object obj)
         {

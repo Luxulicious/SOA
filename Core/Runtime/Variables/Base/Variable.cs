@@ -78,13 +78,13 @@ namespace SOA.Base
 
         #region Event listening
 
-        public void AddListenerFromOnChangeEvent(UnityAction<T> listener)
+        public void AddListenerToOnChangeEvent(UnityAction<T> listener)
         {
             if (listener == null) return;
             _onChangeEvent?.AddListener(listener);
         }
 
-        public void AddListenerFromOnChangeWithHistoryEvent(UnityAction<T, T> listener)
+        public void AddListenerToOnChangeWithHistoryEvent(UnityAction<T, T> listener)
         {
             if (listener == null) return;
             _onChangeWithHistoryEvent?.AddListener(listener);
