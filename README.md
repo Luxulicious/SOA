@@ -29,3 +29,7 @@ Find a way for a game event listener to auto (un)subscribe whenever the referenc
 
 Packaging:
 Exclude test project from package but include it in the repository
+
+Additional features:
+Stacktracing event and variable change invocation
+Finding all references shortcut for game events and variables
