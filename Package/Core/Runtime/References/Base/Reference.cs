@@ -70,6 +70,15 @@ namespace SOA.Base
         [SerializeField, HideInInspector] private bool _foldOutEvents = false;
 
         private void AddAutoListeners(V variable)
+        public Reference()
+        {
+        }
+
+        public Reference(T value)
+        {
+            _localValue = value;
+            _scope = Scope.Local;
+        }
         {
             if (variable == null) return;
             variable.AddListenerFromOnChangeEvent(InvokeOnChangeResponses);
