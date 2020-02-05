@@ -40,14 +40,15 @@ namespace SOA.Base
                 EditorGUI.BeginDisabledGroup(!isPlaying);
                 EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent("Runtime Value"), true);
                 EditorGUI.EndDisabledGroup();
-
+                
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeEvent"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeWithHistoryEvent"), true);
 
+                EditorGUI.BeginDisabledGroup(!isPlaying);
                 var v = target as V;
                 if (GUILayout.Button("Invoke On Change Event")) v.ForceInvokeOnChangeEvent();
-
                 if (GUILayout.Button("Invoke On Change With History Event")) v.ForceInvokeOnChangeWithHistoryEvent();
+                EditorGUI.EndDisabledGroup();
             }
 
 
