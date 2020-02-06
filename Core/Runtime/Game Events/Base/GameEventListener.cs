@@ -6,21 +6,29 @@ using UnityEngine.Events;
 namespace SOA.Base
 {
     [Serializable]
-    public class GameEventListener
+    public class GameEventListener : ISerializationCallbackReceiver
     {
-        [SerializeField] protected GameEvent _gameEvent;
-        [SerializeField] protected UnityEvent _responses;
-        protected GameEvent _prevGameEvent = null;
+        [SerializeField] private GameEvent _gameEvent;
+        [SerializeField] private UnityEvent _responses;
+        [SerializeField] private GameEvent _prevGameEvent;
+
 
         public void InvokeResponses()
         {
             _responses.Invoke();
         }
 
-        public GameEvent PrevGameEvent
+
+        public void OnBeforeSerialize()
         {
-            get => _prevGameEvent;
-            set => _prevGameEvent = value;
+        }
+
+        public void OnAfterDeserialize()
+        {
+            _prevGameEvent?.RemoveAutoSubscriber(this);
+            _gameEvent?.RemoveAutoSubscriber(this);
+            _gameEvent?.AddAutoSubscriber(this);
+            _prevGameEvent = _gameEvent;
         }
     }
 
