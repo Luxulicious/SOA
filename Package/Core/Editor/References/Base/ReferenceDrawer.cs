@@ -138,63 +138,10 @@ namespace SOA.Base
                     throw new ArgumentOutOfRangeException();
             }
 
-            AutoListen(property);
-
             EditorGUI.indentLevel = originalIndentLevel;
             EditorGUI.EndProperty();
         }
 
-        private void AutoListen(SerializedProperty property)
-        {
-            var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
-            var prevGlobalValueProperty = property.FindPropertyRelative(_prevGlobalValuePropertyPath);
-            Object globalValueValue = null;
-            try
-            {
-                globalValueValue = globalValueProperty.objectReferenceValue == null
-                    ? null
-                    : globalValueProperty.objectReferenceValue;
-            }
-            catch (NullReferenceException)
-            {
-            }
-
-            Object prevGlobalValueValue = null;
-            try
-            {
-                prevGlobalValueValue = prevGlobalValueProperty.objectReferenceValue == null
-                    ? null
-                    : prevGlobalValueProperty.objectReferenceValue;
-            }
-            catch (NullReferenceException)
-            {
-            }
-
-            if (property.GetValue() is Reference<V, T, E, EE> reference)
-            {
-                if (reference.PrevGlobalValue != (V) globalValueValue)
-                {
-                    if (reference.PrevGlobalValue != null)
-                    {
-                        var prevGlobalValue = reference.PrevGlobalValue;
-                        if (prevGlobalValue != null)
-                            reference.RemoveAutoListeners(prevGlobalValue);
-                    }
-
-                    if (globalValueValue != null)
-                    {
-                        var globalValue = globalValueValue as V;
-                        reference.AddAutoListeners(globalValue);
-                        
-                    }
-                    if(globalValueValue != null)
-                        reference.PrevGlobalValue = globalValueValue as V;
-                    else
-                        reference.PrevGlobalValue = null;
-
-                }
-            }
-        }
 
         private static Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect, Rect contentRect)
         {

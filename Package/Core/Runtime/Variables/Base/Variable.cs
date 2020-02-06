@@ -76,42 +76,19 @@ namespace SOA.Base
             _runtimeValue = _defaultValue;
         }
 
-        #region Event listening
-
-        public void AddListenerToOnChangeEvent(UnityAction<T> listener)
+        public void AddAutoListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
-            if (listener == null) return;
-            _onChangeEvent?.AddListener(listener);
+            _onChangeEvent.AddListener(onChangeListener);
+            _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);
         }
 
-        public void AddListenerToOnChangeWithHistoryEvent(UnityAction<T, T> listener)
+        public void RemoveAutoSubscriber(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
-            if (listener == null) return;
-            _onChangeWithHistoryEvent?.AddListener(listener);
+            _onChangeEvent.AddListener(onChangeListener);
+            _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);
         }
 
-        public bool RemoveListenerFromOnChangeEvent(UnityAction<T> listener)
-        {
-            try
-            {
-                _onChangeEvent.RemoveListener(listener);
-            }
-            catch (NullReferenceException)
-            {
-                return false;
-            }
-
-            return true;
-        }
-
-        public void RemoveListenerFromOnChangeWithHistoryEvent(UnityAction<T, T> listener)
-        {
-            _onChangeWithHistoryEvent.RemoveListener(listener);
-        }
-
-        #endregion
-
-        #region Test Methods For Event invocation 
+        #region Forceful Methods For Event invocation 
 
         public void ForceInvokeOnChangeEvent()
         {
