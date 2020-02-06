@@ -55,7 +55,7 @@ namespace SOA.Base
         }
     }
 
-    public abstract class Reference<V, T, E, EE> : Reference
+    public abstract class Reference<V, T, E, EE> : Reference, ISerializationCallbackReceiver
         where V : Variable<T, E, EE>
         where E : UnityEvent<T>, new()
         where EE : UnityEvent<T, T>, new()
@@ -78,20 +78,6 @@ namespace SOA.Base
             _scope = Scope.Local;
         }
 
-        public void AddAutoListeners(V variable)
-        {
-            if (variable == null) return;
-            variable.AddListenerToOnChangeEvent(InvokeOnChangeResponses);
-            variable.AddListenerToOnChangeWithHistoryEvent(InvokeOnValueChangeWithHistoryResponses);
-        }
-
-        public void RemoveAutoListeners(V variable)
-        {
-            if (variable == null) return;
-            variable.RemoveListenerFromOnChangeEvent(InvokeOnChangeResponses);
-            variable.RemoveListenerFromOnChangeWithHistoryEvent(InvokeOnValueChangeWithHistoryResponses);
-        }
-
         private void InvokeOnChangeResponses(T currentValue)
         {
             _onValueChangedEvent?.Invoke(currentValue);
@@ -100,12 +86,6 @@ namespace SOA.Base
         private void InvokeOnValueChangeWithHistoryResponses(T currentValue, T previousValue)
         {
             _onValueChangedWithHistoryEvent?.Invoke(currentValue, previousValue);
-        }
-
-        public V PrevGlobalValue
-        {
-            get { return _prevGlobalValue; }
-            set { _prevGlobalValue = value; }
         }
 
         public V GlobalValue
@@ -168,38 +148,23 @@ namespace SOA.Base
                 }
             }
         }
+        
+        public bool EqualsValue(object obj)
+        {
+            return ((T) obj).Equals(Value);
+        }
 
-        /*
         public void OnBeforeSerialize()
         {
+            
         }
 
         public void OnAfterDeserialize()
         {
-            if (_globalValue != null)
-            {
-                if (_globalValue != _prevGlobalValue)
-                {
-                    if (_prevGlobalValue != null)
-                    {
-                        RemoveAutoListeners(_prevGlobalValue);
-                    }
-
-                    AddAutoListeners(_globalValue);
-                    _prevGlobalValue = _globalValue;
-                }
-            }
-            else if (_globalValue == null && _prevGlobalValue != null)
-            {
-                RemoveAutoListeners(_prevGlobalValue);
-                _prevGlobalValue = null;
-            }
-        }
-        */
-
-        public bool EqualsValue(object obj)
-        {
-            return ((T) obj).Equals(Value);
+            _prevGlobalValue?.RemoveAutoSubscriber(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
+            _globalValue?.RemoveAutoSubscriber(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
+            _globalValue?.AddAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
+            _prevGlobalValue = _globalValue;
         }
     }
 }
