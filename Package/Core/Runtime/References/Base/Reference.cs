@@ -5,7 +5,6 @@ using UnityEngine.Events;
 
 namespace SOA.Base
 {
-
     //TODO Move these non-"Reference" classes to a seperate file and namespace/class
     public enum Persistence
     {
