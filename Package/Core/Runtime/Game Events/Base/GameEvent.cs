@@ -17,14 +17,14 @@ namespace SOA.Base
             _event.Invoke();
         }
 
-        public void AddAutoSubscriber(GameEventListener _autoSubscriber)
+        public void AddAutoListener(UnityAction listener)
         {
-            _event.AddListener(_autoSubscriber.InvokeResponses);
+            _event.AddListener(listener);
         }
 
-        public void RemoveAutoSubscriber(GameEventListener _autoSubscriber)
+        public void RemoveAutoListener(UnityAction listener)
         {
-            _event.RemoveListener(_autoSubscriber.InvokeResponses);
+            _event.RemoveListener(listener);
         }
 
         public void RemoveListener(UnityAction listener)

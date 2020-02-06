@@ -25,9 +25,9 @@ namespace SOA.Base
 
         public void OnAfterDeserialize()
         {
-            _prevGameEvent?.RemoveAutoSubscriber(this);
-            _gameEvent?.RemoveAutoSubscriber(this);
-            _gameEvent?.AddAutoSubscriber(this);
+            _prevGameEvent?.RemoveAutoListener(InvokeResponses);
+            _gameEvent?.RemoveAutoListener(InvokeResponses);
+            _gameEvent?.AddAutoListener(InvokeResponses);
             _prevGameEvent = _gameEvent;
         }
     }
