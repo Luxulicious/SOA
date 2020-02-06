@@ -37,8 +37,9 @@ namespace SOA.Base
         public static void SetValue(this SerializedProperty property, object value)
         {
             var parentType = property.serializedObject.targetObject.GetType();
-            var
-                fi = parentType.GetField(property.propertyPath); //this FieldInfo contains the type.
+            var fi = parentType.GetField(property.propertyPath);
+            if (fi == null)
+                fi = parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(property.serializedObject.targetObject, value);
         }
     }
