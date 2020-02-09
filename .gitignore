@@ -58,6 +58,3 @@ sysinfo.txt
 # Crashlytics generated file
 crashlytics-build.properties
 
-/.[Tt]est/
-/*.[Tt]est/
-/[Tt]est/
