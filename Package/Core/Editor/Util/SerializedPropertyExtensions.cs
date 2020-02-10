@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using UnityEditor;
+using UnityEngine;
 
 namespace SOA.Base
 {
@@ -41,6 +42,20 @@ namespace SOA.Base
             if (fi == null)
                 fi = parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
             fi.SetValue(property.serializedObject.targetObject, value);
+        }
+
+        public static bool IsPartOfAnyScene(this SerializedProperty property)
+        {
+            var value = GetValue(property);
+            if (value == null)
+                return false;
+            var gameObject = value as GameObject;
+            if (gameObject)
+                return gameObject.scene.rootCount != 0;
+            var component = value as Component;
+            if (component)
+                return component.gameObject.scene.rootCount != 0;
+            return false;
         }
     }
 }
