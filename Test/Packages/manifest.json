@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "com.theluxgames.soa": "file:C:/Users/Tom/Documents/Github/SOA",
+    "com.theluxgames.soa": "file:C:/Users/Tom/Documents/Github/SOA/Package",
     "com.unity.2d.sprite": "1.0.0",
     "com.unity.2d.tilemap": "1.0.0",
     "com.unity.collab-proxy": "1.2.16",

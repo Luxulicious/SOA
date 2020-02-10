@@ -21,6 +21,13 @@ public class SetSpriteColor : MonoBehaviour
         _sp.color = Color.red;
     }
 
+    public void SetColorToBlue()
+    {
+        if (!_sp)
+            _sp = this.GetComponent<SpriteRenderer>();
+        _sp.color = Color.blue;
+    }
+
     public void RevertColor()
     {
         if (!_sp)
