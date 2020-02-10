@@ -7,9 +7,9 @@ namespace SOA.Base
     public abstract class Variable<T, E, EE> : ScriptableObject
         where EE : UnityEvent<T, T>, new() where E : UnityEvent<T>, new()
     {
-        [SerializeField] private T _defaultValue;
-        [SerializeField] private T _runtimeValue;
-        [SerializeField] private Persistence _persistence;
+        [SerializeField] protected T _defaultValue;
+        [SerializeField] protected T _runtimeValue;
+        [SerializeField] protected Persistence _persistence;
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
         protected E _onChangeEvent = new E();
