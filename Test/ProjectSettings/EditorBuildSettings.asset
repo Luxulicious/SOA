@@ -6,6 +6,6 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Packages/com.theluxgames.soa/.test/Assets/Scenes/Test Scene.unity
-    guid: 5e4d3fca2ae11eb44af904f95e3cd0dc
+    path: Assets/Scenes/Test Scene.unity
+    guid: 9cf3b5eb88589ce47a0ee8e1ff49c265
   m_configObjects: {}

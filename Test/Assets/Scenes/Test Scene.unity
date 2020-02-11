@@ -1347,12 +1347,25 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1633468301}
-  m_Enabled: 0
+  m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 2eeb18dee7d58ac4885c6990845e5170, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   _reference: {fileID: 1633468307}
+  speed:
+    _scope: 0
+    _persistence: 0
+    _localValue: 1
+    _globalValue: {fileID: 0}
+    _onValueChangedEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedWithHistoryEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _prevGlobalValue: {fileID: 0}
+    _foldOutEvents: 0
 --- !u!1 &1649022259
 GameObject:
   m_ObjectHideFlags: 0
