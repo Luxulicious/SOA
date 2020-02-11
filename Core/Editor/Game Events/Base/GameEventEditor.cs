@@ -21,7 +21,7 @@ namespace SOA.Base
         }
     }
 
-    public abstract class GameEventEditor<ESO, E, T> : Editor where ESO : GameEvent<E, T> where E : UnityEvent<T>
+    public abstract class GameEventEditor<ESO, E, T> : Editor where ESO : GameEvent<E, T> where E : UnityEvent<T>, new()
     {
         public override void OnInspectorGUI()
         {
