@@ -8,9 +8,9 @@ namespace SOA.Base
     [Serializable]
     public class GameEventListener : ISerializationCallbackReceiver
     {
-        [SerializeField] private GameEvent _gameEvent;
-        [SerializeField] private UnityEvent _responses;
-        [SerializeField] private GameEvent _prevGameEvent;
+        [SerializeField] protected GameEvent _gameEvent;
+        [SerializeField] protected UnityEvent _responses;
+        protected GameEvent _prevGameEvent;
 
 
         public void InvokeResponses()
@@ -32,27 +32,29 @@ namespace SOA.Base
         }
     }
 
-    public abstract class GameEventListener<GE, E, T>
-        where GE : GameEvent<E, T> where E : UnityEvent<T>
+    public abstract class GameEventListener<GE, E, T> : ISerializationCallbackReceiver
+        where GE : GameEvent<E, T>, new() where E : UnityEvent<T>, new()
     {
         [SerializeField] protected GE _gameEvent;
         [SerializeField] protected E _responses;
+        protected GE _prevGameEvent;
 
-        public void OnEnable()
+
+        private void InvokeResponses(T value)
         {
-            if (_gameEvent == null) return;
-            _gameEvent.AddListener(InvokeResponses);
+            _responses.Invoke(value);
         }
 
-        public void OnDisable()
+        public void OnBeforeSerialize()
         {
-            if (_gameEvent == null) return;
-            _gameEvent.RemoveListener(InvokeResponses);
         }
 
-        private void InvokeResponses(T t0)
+        public void OnAfterDeserialize()
         {
-            _responses.Invoke(t0);
+            _prevGameEvent?.RemoveAutoListener(InvokeResponses);
+            _gameEvent?.RemoveAutoListener(InvokeResponses);
+            _gameEvent?.AddAutoListener(InvokeResponses);
+            _prevGameEvent = _gameEvent;
         }
     }
 }

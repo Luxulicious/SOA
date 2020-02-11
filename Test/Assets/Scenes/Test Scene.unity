@@ -1017,6 +1017,7 @@ GameObject:
   - component: {fileID: 1111453298}
   - component: {fileID: 1111453297}
   - component: {fileID: 1111453299}
+  - component: {fileID: 1111453300}
   m_Layer: 5
   m_Name: Health
   m_TagString: Untagged
@@ -1120,6 +1121,34 @@ MonoBehaviour:
         m_Calls: []
     _prevGlobalValue: {fileID: 11400000, guid: eb366dbefc52149499a9eb7c21557c8a, type: 2}
     _foldOutEvents: 1
+--- !u!114 &1111453300
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1111453295}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 366495b551657924bbf09bc73d547ea6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  listener:
+    _gameEvent: {fileID: 11400000, guid: 9d10edaa1f8c91f4ebf19a3a440e30a5, type: 2}
+    _responses:
+      m_PersistentCalls:
+        m_Calls:
+        - m_Target: {fileID: 1111453297}
+          m_MethodName: set_fontSize
+          m_Mode: 0
+          m_Arguments:
+            m_ObjectArgument: {fileID: 0}
+            m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+            m_IntArgument: 0
+            m_FloatArgument: 0
+            m_StringArgument: 
+            m_BoolArgument: 0
+          m_CallState: 2
 --- !u!1 &1606121891
 GameObject:
   m_ObjectHideFlags: 0
