@@ -5,7 +5,7 @@ using $USING$;
 namespace SOA.Common.CustomTypes
 {
     [Serializable]
-    public class $TYPENAME$GameEventListener : EventListener<$TYPENAME$GameEvent, $TYPENAME$UnityEvent, $TYPE$>
+    public class $TYPENAME$GameEventListener : GameEventListener<$TYPENAME$GameEvent, $TYPENAME$UnityEvent, $TYPE$>
     {
     }
 }

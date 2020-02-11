@@ -5,7 +5,7 @@ using $USING$;
 namespace SOA.Common.CustomTypes
 {
     [CustomEditor(typeof($TYPENAME$GameEvent))]
-    public class $TYPENAME$GameEventEditor : UnityEventSOEditor<$TYPENAME$GameEvent, $TYPENAME$UnityEvent, $TYPE$>
+    public class $TYPENAME$GameEventEditor : GameEventEditor<$TYPENAME$GameEvent, $TYPENAME$UnityEvent, $TYPE$>
     {
     }
 }
