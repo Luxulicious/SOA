@@ -2,7 +2,7 @@ using SOA.Base;
 using UnityEditor;
 using UnityEngine;
 
-namespace SOA.Common.CustomTypes
+namespace SOA.Common.UnityEngine
 {
     [CustomPropertyDrawer(typeof(KeyCodeReference))]
     public class

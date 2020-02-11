@@ -2,7 +2,7 @@ using System;
 using UnityEngine.Events;
 using UnityEngine;
 
-namespace SOA.Common.CustomTypes
+namespace SOA.Common.UnityEngine
 {
     [Serializable]
     public class KeyCodeUnityEvent : UnityEvent<KeyCode>
