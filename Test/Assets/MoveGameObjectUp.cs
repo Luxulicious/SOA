@@ -8,8 +8,10 @@ public class MoveGameObjectUp : MonoBehaviour
     [SerializeField]
     private GameObjectReferenceComponent _reference;
 
+    public FloatReference speed = new FloatReference(10f);
+
     void Update()
     {
-        _reference.gameObject.transform.position += (Vector3) (Vector2.up * 10f * Time.deltaTime);
+        _reference.gameObject.transform.position += (Vector3) (Vector2.up * speed.Value * Time.deltaTime);
     }
 }
