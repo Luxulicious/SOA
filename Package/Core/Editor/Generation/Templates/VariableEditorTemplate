@@ -1,0 +1,12 @@
+﻿using SOA.Base;
+using UnityEditor;
+using $USING$;
+
+namespace SOA.Common.CustomTypes
+{
+    [CustomEditor(typeof($TYPENAME$Variable))]
+    public class $TYPENAME$VariableEditor : VariableEditor<$TYPENAME$Variable, $TYPE$, $TYPENAME$UnityEvent, $TYPENAME$$TYPENAME$UnityEvent>
+    {
+
+    }
+}
