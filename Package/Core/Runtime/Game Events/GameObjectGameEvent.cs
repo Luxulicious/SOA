@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace SOA.Common.CustomTypes
 {
-    [CreateAssetMenu(fileName = "New GameObject Event", menuName = "SOA/GameObject/Event", order = 1)]
+    [CreateAssetMenu(fileName = "New GameObject Event", menuName = "SOA/UnityEngine/GameObject/Event", order = 1)]
     public class GameObjectGameEvent : GameEvent<GameObjectUnityEvent, GameObject>
     {
     }
