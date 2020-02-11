@@ -1,8 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using SOA.Base;
-using SOA.Common.CustomTypes;
+﻿using SOA.Base;
 using SOA.Common.Primitives;
+using SOA.Common.UnityEngine;
 using UnityEngine;
 
 public class KeyInput : MonoBehaviour
