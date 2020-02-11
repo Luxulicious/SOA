@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using SOA.Common.Primitives;
 using UnityEngine;
 
-public class GameObjectReferenceDebugging : MonoBehaviour
+public class MoveGameObjectUp : MonoBehaviour
 {
     [SerializeField]
     private GameObjectReferenceComponent _reference;

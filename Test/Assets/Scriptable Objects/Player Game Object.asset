@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 88c6a2fab57ca3c498a94c141f669bd1, type: 3}
+  m_Script: {fileID: 11500000, guid: 7fdb3126c4b46f34db5e2b9db75ce3fc, type: 3}
   m_Name: Player Game Object
   m_EditorClassIdentifier: 
   _defaultValue: {fileID: 0}
@@ -17,18 +17,7 @@ MonoBehaviour:
   _persistence: 0
   _onChangeEvent:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 11400000, guid: 559f6c422f8c4074c981829aa5a3885b, type: 2}
-        m_MethodName: Invoke
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
   _onChangeWithHistoryEvent:
     m_PersistentCalls:
       m_Calls: []
