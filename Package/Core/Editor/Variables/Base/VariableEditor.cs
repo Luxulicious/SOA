@@ -72,7 +72,7 @@ namespace SOA.Base
                     EditorGUI.EndDisabledGroup();
                 }
 
-                var isRunTimeOnlyType = typeof(T) == typeof(GameObject) || typeof(T) == typeof(Component);
+                var isRunTimeOnlyType = typeof(T).Equals(typeof(GameObject)) || typeof(T).Equals(typeof(Component)) || typeof(T).IsSubclassOf(typeof(GameObject)) || typeof(T).IsSubclassOf(typeof(Component));
                 if (isRunTimeOnlyType && !isPlaying) EditorGUILayout.LabelField($"({typeof(T).Name} Variables can only be assigned to at runtime without inspector)");
 
 
