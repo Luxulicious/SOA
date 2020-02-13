@@ -21,7 +21,7 @@ namespace SOA.Base
             return property.displayName.Contains(_displayNameIdentifier);
         }
 
-        public static float FindPropertyRelativeAndGetHeight(this SerializedProperty property, string propertyPath)
+        public static float GetRelativePropertyHeight(this SerializedProperty property, string propertyPath)
         {
             return EditorGUI.GetPropertyHeight(property.FindPropertyRelative(propertyPath));
         }
@@ -29,19 +29,23 @@ namespace SOA.Base
         public static object GetValue(this SerializedProperty property)
         {
             var parentType = property.serializedObject.targetObject.GetType();
-            var fi = parentType.GetField(property.propertyPath);
-            if (fi == null)
-                fi = parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
-            return fi.GetValue(property.serializedObject.targetObject);
+            var fi = parentType.GetFieldViaPath(property.propertyPath);
+            return fi?.GetValue(property.serializedObject.targetObject);
         }
 
         public static void SetValue(this SerializedProperty property, object value)
         {
             var parentType = property.serializedObject.targetObject.GetType();
-            var fi = parentType.GetField(property.propertyPath);
-            if (fi == null)
-                fi = parentType.GetField(property.propertyPath, BindingFlags.NonPublic | BindingFlags.Instance);
-            fi.SetValue(property.serializedObject.targetObject, value);
+            var fi = parentType.GetFieldViaPath(property.propertyPath);
+            fi?.SetValue(property.serializedObject.targetObject, value);
+        }
+
+
+        public static Type GetType(SerializedProperty property)
+        {
+            var parentType = property.serializedObject.targetObject.GetType();
+            var fi = parentType.GetFieldViaPath(property.propertyPath);
+            return fi?.FieldType;
         }
 
         public static bool IsPartOfAnyScene(this SerializedProperty property)
@@ -56,6 +60,35 @@ namespace SOA.Base
             if (component)
                 return component.gameObject.scene.rootCount != 0;
             return false;
+        }
+
+        public static bool IsPossibleRunTime(this SerializedProperty property)
+        {
+            var type = GetType(property);
+            if (type != null)
+                return type.IsSubclassOf(typeof(GameObject)) || type == typeof(GameObject) ||
+                       type.IsSubclassOf(typeof(Component)) || type == typeof(Component);
+            throw new NullReferenceException($"Failed to get type of {property}");
+        }
+
+        public static FieldInfo GetFieldViaPath(this Type type, string path)
+        {
+            var parentType = type;
+            var fi = type.GetField(path);
+            var perDot = path.Split('.');
+            foreach (var fieldName in perDot)
+            {
+                fi = parentType.GetField(fieldName);
+                if (fi == null)
+                    fi = parentType.GetField(path, BindingFlags.NonPublic | BindingFlags.Instance);
+                if (fi != null)
+                    parentType = fi.FieldType;
+                else
+                    return null;
+            }
+            if (fi != null)
+                return fi;
+            else return null;
         }
     }
 }
