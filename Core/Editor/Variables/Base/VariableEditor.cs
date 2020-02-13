@@ -1,4 +1,8 @@
-﻿using System.Xml.Schema;
+﻿using System;
+using System.Linq;
+using System.Reflection;
+using System.Text.RegularExpressions;
+using System.Xml.Schema;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -17,6 +21,27 @@ namespace SOA.Base
 
         public static string PersistencePropertyPath => _persistencePropertyPath;
 
+        public static Type FindType(string qualifiedTypeName)
+        {
+            Type t = Type.GetType(qualifiedTypeName);
+
+            if (t != null)
+            {
+                return t;
+            }
+            else
+            {
+                foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
+                {
+                    t = asm.GetType(qualifiedTypeName);
+                    if (t != null)
+                        return t;
+                }
+
+                return null;
+            }
+        }
+
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -29,7 +54,7 @@ namespace SOA.Base
 
             if (!isPlaying)
                 EditorGUILayout.PropertyField(useAsConstantProperty, true);
-            
+
             if (useAsConstantProperty.boolValue)
             {
                 EditorGUILayout.PropertyField(!isPlaying ? defaultValueProperty : runtimeValueProperty,
@@ -37,44 +62,62 @@ namespace SOA.Base
             }
             else
             {
-                EditorGUI.BeginDisabledGroup(isPlaying);
-                EditorGUILayout.PropertyField(defaultValueProperty, new GUIContent("Default Value"), true);
-                EditorGUI.EndDisabledGroup();
-                if (runtimeValueProperty.IsPartOfAnyScene())
+                if (runtimeValueProperty.IsPossibleRunTime())
                 {
-                    Debug.Log("Scene object detected!");
-                    if (!isPlaying)
-                    {
-                        runtimeValueProperty.SetValue(null);
-                        EditorGUI.BeginDisabledGroup(true);
-                        EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent("Runtime Value"), true);
-                        EditorGUI.EndDisabledGroup();
-                    }
-                    else
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.PropertyField(defaultValueProperty, true);
+                    EditorGUI.EndDisabledGroup();
+
+                    if (isPlaying)
                     {
                         EditorGUI.BeginDisabledGroup(true);
-                        EditorGUILayout.TextField(runtimeValueProperty?.displayName, runtimeValueProperty.GetValue()?.ToString());
+                        var runtimeValue = runtimeValueProperty.GetValue();
+                        var valueString = runtimeValue?.ToString();
+                        var displayValue = runtimeValue != null
+                            ? $"{valueString}"
+                            : $"None ({typeof(T)})";
+                        EditorGUILayout.TextField(runtimeValueProperty.displayName,
+                            displayValue);
                         EditorGUI.EndDisabledGroup();
+
                         if (GUILayout.Button("Go to reference"))
                         {
-                            var instance = (runtimeValueProperty.GetValue() as GameObject);
-                            if (!instance) instance = (runtimeValueProperty.GetValue() as Component)?.gameObject;
+                            var instance = (runtimeValue as GameObject);
+                            if (instance == null) instance = (runtimeValue as Component)?.gameObject;
                             var instanceId = instance.GetInstanceID();
                             Selection.activeInstanceID = instanceId;
                             Selection.activeGameObject = instance;
                         }
+
+                        if (GUILayout.Button("Clear reference"))
+                        {
+                            runtimeValueProperty.SetValue(null);
+                        }
+
                     }
+                    else
+                    {
+                        if(runtimeValueProperty.GetValue() != null)
+                            runtimeValueProperty.SetValue(null);
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUILayout.PropertyField(runtimeValueProperty, true);
+                        EditorGUI.EndDisabledGroup();
+                        
+                    }
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.LabelField(
+                        $"({typeof(T).Name} Variables can only be assigned to at runtime without inspector)");
+                    EditorGUI.EndDisabledGroup();
                 }
                 else
                 {
+                    EditorGUI.BeginDisabledGroup(isPlaying);
+                    EditorGUILayout.PropertyField(defaultValueProperty, true);
+                    EditorGUI.EndDisabledGroup();
                     EditorGUI.BeginDisabledGroup(!isPlaying);
-                    EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent("Runtime Value"), true);
+                    EditorGUILayout.PropertyField(runtimeValueProperty, true);
                     EditorGUI.EndDisabledGroup();
                 }
-
-                var isRunTimeOnlyType = typeof(T).Equals(typeof(GameObject)) || typeof(T).Equals(typeof(Component)) || typeof(T).IsSubclassOf(typeof(GameObject)) || typeof(T).IsSubclassOf(typeof(Component));
-                if (isRunTimeOnlyType && !isPlaying) EditorGUILayout.LabelField($"({typeof(T).Name} Variables can only be assigned to at runtime without inspector)");
-
 
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeEvent"), true);
                 EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeWithHistoryEvent"), true);
@@ -85,7 +128,6 @@ namespace SOA.Base
                 if (GUILayout.Button("Invoke On Change With History Event")) v.ForceInvokeOnChangeWithHistoryEvent();
                 EditorGUI.EndDisabledGroup();
             }
-
 
             serializedObject.ApplyModifiedProperties();
         }
