@@ -217,10 +217,10 @@ namespace SOA.Base
             switch (scope)
             {
                 case Scope.Local:
-                    valueHeight = property.FindPropertyRelativeAndGetHeight(_localValuePropertyPath);
+                    valueHeight = property.GetRelativePropertyHeight(_localValuePropertyPath);
                     break;
                 case Scope.Global:
-                    valueHeight = property.FindPropertyRelativeAndGetHeight(_globalValuePropertyPath);
+                    valueHeight = property.GetRelativePropertyHeight(_globalValuePropertyPath);
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -235,9 +235,9 @@ namespace SOA.Base
                 case Persistence.Variable:
                 {
                     var eventsFoldoutHeight = EditorGUIUtility.singleLineHeight;
-                    var onValueChangedHeight = property.FindPropertyRelativeAndGetHeight(_onValueChangedPropertyPath);
+                    var onValueChangedHeight = property.GetRelativePropertyHeight(_onValueChangedPropertyPath);
                     var onValueChangedWithHistoryHeight =
-                        property.FindPropertyRelativeAndGetHeight(_onValueChangedWithHistoryPropertyPath);
+                        property.GetRelativePropertyHeight(_onValueChangedWithHistoryPropertyPath);
                     var foldedInHeight = usageAndValueHeight + eventsFoldoutHeight;
                     var foldedOutHeight = foldedInHeight + _breakLine + onValueChangedHeight + _breakLine +
                                           onValueChangedWithHistoryHeight + EditorGUIUtility.singleLineHeight;
