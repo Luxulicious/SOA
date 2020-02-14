@@ -6,9 +6,7 @@ Known bugs and todo's:
 Variables:
 
 Reference:
-OnChange and OnChangeWithHistory auto-listeners don't seem to work, 
-ISerializationCallbackReceiver doesn't seem to keep the reference once entering playmode most likely
-Add more constructors in base reference
+Make reference collapsable
 
 Generation:
 Optimize type search for generation.
@@ -33,3 +31,4 @@ Exclude test project from package but include it in the repository
 Additional features:
 Stacktracing event and variable change invocation
 Finding all references shortcut for game events and variables
+Decorators for modular scriptable object logic
