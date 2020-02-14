@@ -43,8 +43,14 @@ namespace SOA.Base
                     {
                         var prev = _runtimeValue;
                         _runtimeValue = value;
-                        if (_runtimeValue.Equals(prev))
+                        if (_runtimeValue != null && prev != null)
+                        {
+                            if (_runtimeValue.Equals(prev))
+                                return;
+                        }
+                        else if (_runtimeValue == null && prev == null)
                             return;
+
                         _onChangeEvent.Invoke(_runtimeValue);
                         _onChangeWithHistoryEvent.Invoke(_runtimeValue, prev);
                         break;
