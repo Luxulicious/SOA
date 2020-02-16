@@ -40,15 +40,25 @@ namespace SOA.Base
         protected GE _prevGameEvent;
 
 
-        private void InvokeResponses(T value)
+        protected virtual void InvokeResponses(T value)
         {
             _responses.Invoke(value);
+        }
+
+        public void AddListener(UnityAction<T> action)
+        {
+            _responses.AddListener(action);
+        }
+
+        public void RemoveListener(UnityAction<T> action)
+        {
+            _responses.RemoveListener(action);
         }
 
         public void OnBeforeSerialize()
         {
         }
-
+        
         public void OnAfterDeserialize()
         {
             _prevGameEvent?.RemoveAutoListener(InvokeResponses);

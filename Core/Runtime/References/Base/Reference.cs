@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEditor.Events;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -152,6 +153,45 @@ namespace SOA.Base
         public bool EqualsValue(object obj)
         {
             return ((T) obj).Equals(Value);
+        }
+
+        public void AddPersistentListener(UnityAction<T> action)
+        {
+            UnityEventTools.AddPersistentListener(_onValueChangedEvent, action);
+        }
+
+        public void RemovePersistentListener(UnityAction<T> action) { 
+            UnityEventTools.RemovePersistentListener(_onValueChangedEvent, action);
+        }
+
+        public void AddListener(UnityAction<T> action)
+        {
+            _onValueChangedEvent.AddListener(action);
+        }
+
+        public void RemoveListener(UnityAction<T> action)
+        {
+            _onValueChangedEvent.RemoveListener(action);
+        }
+
+        public void AddPersistentListener(UnityAction<T,T> action)
+        {
+            UnityEventTools.AddPersistentListener(_onValueChangedWithHistoryEvent, action);
+        }
+
+        public void RemovePersistentListener(UnityAction<T, T> action)
+        {
+            UnityEventTools.RemovePersistentListener(_onValueChangedWithHistoryEvent, action);
+        }
+
+        public void AddListener(UnityAction<T, T>  action)
+        {
+            _onValueChangedWithHistoryEvent.AddListener(action);
+        }
+
+        public void RemoveListener(UnityAction<T, T> action)
+        {
+            _onValueChangedWithHistoryEvent.RemoveListener(action);
         }
 
         public void OnBeforeSerialize()
