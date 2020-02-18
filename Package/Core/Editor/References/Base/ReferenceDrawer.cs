@@ -2,7 +2,6 @@
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
-using Object = System.Object;
 
 namespace SOA.Base
 {
@@ -21,18 +20,19 @@ namespace SOA.Base
         private static readonly string _localValuePropertyPath = "_localValue";
         private static readonly string _globalValuePropertyPath = "_globalValue";
         private static readonly string _prevGlobalValuePropertyPath = "_prevGlobalValue";
+        private static readonly string _foldoutPropertyPath = "_foldout";
 
         private static readonly string _onValueChangedPropertyPath = "_onValueChangedEvent";
         private static readonly string _onValueChangedWithHistoryPropertyPath = "_onValueChangedWithHistoryEvent";
-        private static readonly string _foldOutEventsPropertyPath = "_foldOutEvents";
-        private static readonly string _onChangeEventsFoldOutHeader = "On Change Events";
+        private static readonly string _foldoutEventsPropertyPath = "_foldoutEvents";
+        private static readonly string _onChangeEventsFoldoutHeader = "On Change Events";
 
         //TODO Move this to a utility inspector/UI class
         private static Color _wrongFieldColor = new Color(1, 0.75f, 0, .25f);
 
         public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
-            //Begin
+            //Begin Label
             label = EditorGUI.BeginProperty(position, label, property);
 
             //Check if property is part of array
@@ -40,102 +40,133 @@ namespace SOA.Base
 
             var originalIndentLevel = EditorGUI.indentLevel;
 
-            EditorGUI.PrefixLabel(position, label);
+            property.FindPropertyRelative(_foldoutPropertyPath).boolValue = EditorGUI.Foldout(
+                new Rect(position.x, position.y, 5, position.height), property.FindPropertyRelative(_foldoutPropertyPath).boolValue,
+                !property.FindPropertyRelative(_foldoutPropertyPath).boolValue ? property.displayName : "");
 
-            var contentRect = EditorGUI.PrefixLabel(position, label);
+            var isFoldedOut = property.FindPropertyRelative(_foldoutPropertyPath).boolValue;
 
-            if (isPartOfArray)
-                EditorGUI.indentLevel -= 1;
-
-            #region Usage (Scope & Persistence)
-
-            //Get properties for usage section
-            var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
-            var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
-            var scopePropertyHeight = EditorGUI.GetPropertyHeight(scopeProperty);
-            var persistencePropertyHeight = EditorGUI.GetPropertyHeight(persistenceProperty);
-
-            //Get rects for usage sections
-            var usageRectHeight = scopePropertyHeight > persistencePropertyHeight
-                ? scopePropertyHeight
-                : persistencePropertyHeight;
-            var usageRect = new Rect
-            (
-                contentRect.position.x,
-                contentRect.position.y,
-                contentRect.width,
-                usageRectHeight
-            );
-            var halfSplitUsageRectWidth = (usageRect.width - _marginRight) / 2;
-            var firstHalfSplitUsageRect = new Rect
-            (
-                usageRect.position.x,
-                usageRect.position.y,
-                halfSplitUsageRectWidth,
-                usageRect.height
-            );
-            var secondHalfSplitUsageRect = new Rect
-            (
-                usageRect.position.x + halfSplitUsageRectWidth + _marginRight,
-                usageRect.y,
-                halfSplitUsageRectWidth,
-                usageRect.height
-            );
-
-            //Draw usage section
-            EditorGUI.PropertyField(firstHalfSplitUsageRect, scopeProperty, GUIContent.none, true);
-            EditorGUI.PropertyField(secondHalfSplitUsageRect, persistenceProperty, GUIContent.none, true);
-
-            //Get values from usage properties
-            var scope = (Scope) scopeProperty.enumValueIndex;
-            var persistence = (Persistence) persistenceProperty.enumValueIndex;
-
-            #endregion
-
-            var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
-            var localValueProperty = property.FindPropertyRelative(_localValuePropertyPath);
-            var valueRect = new Rect();
-            //Draw value fields
-            switch (scope)
+            if (isFoldedOut)
             {
-                case Scope.Local:
-                    valueRect = DrawValuePropertyField(localValueProperty, usageRect, contentRect);
-                    break;
-                case Scope.Global:
-                    valueRect = DrawValuePropertyField(globalValueProperty, usageRect, contentRect);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var labelRect = EditorGUI.PrefixLabel(position, label);
+
+                var contentRect = EditorGUI.PrefixLabel(position, label);
+
+                if (isPartOfArray)
+                    EditorGUI.indentLevel -= 1;
+
+                #region Usage (Scope & Persistence)
+
+                //Get properties for usage section
+                var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
+                var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
+                var scopePropertyHeight = EditorGUI.GetPropertyHeight(scopeProperty);
+                var persistencePropertyHeight = EditorGUI.GetPropertyHeight(persistenceProperty);
+
+                //Get rects for usage sections
+                var usageRectHeight = scopePropertyHeight > persistencePropertyHeight
+                    ? scopePropertyHeight
+                    : persistencePropertyHeight;
+                var usageRect = new Rect
+                (
+                    contentRect.position.x,
+                    contentRect.position.y + _breakLine,
+                    contentRect.width,
+                    usageRectHeight
+                );
+                var halfSplitUsageRectWidth = (usageRect.width - _marginRight) / 2;
+                var firstHalfSplitUsageRect = new Rect
+                (
+                    usageRect.position.x,
+                    usageRect.position.y,
+                    halfSplitUsageRectWidth,
+                    usageRect.height
+                );
+                var secondHalfSplitUsageRect = new Rect
+                (
+                    usageRect.position.x + halfSplitUsageRectWidth + _marginRight,
+                    usageRect.y,
+                    halfSplitUsageRectWidth,
+                    usageRect.height
+                );
+
+                //Draw usage section
+                EditorGUI.PropertyField(firstHalfSplitUsageRect, scopeProperty, GUIContent.none, true);
+                EditorGUI.PropertyField(secondHalfSplitUsageRect, persistenceProperty, GUIContent.none, true);
+
+                //Get values from usage properties
+                var scope = (Scope) scopeProperty.enumValueIndex;
+                var persistence = (Persistence) persistenceProperty.enumValueIndex;
+
+                #endregion
+
+                var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
+                var localValueProperty = property.FindPropertyRelative(_localValuePropertyPath);
+                var valueRect = new Rect();
+                //Draw value fields
+                switch (scope)
+                {
+                    case Scope.Local:
+                        valueRect = DrawValuePropertyField(localValueProperty, usageRect, contentRect);
+                        break;
+                    case Scope.Global:
+                        valueRect = DrawValuePropertyField(globalValueProperty, usageRect, contentRect);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                switch (persistence)
+                {
+                    case Persistence.Constant:
+                        /*
+                        if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
+                            if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Variable)
+                            {
+                                EditorGUI.DrawRect(valueRect, _wrongFieldColor);
+                                Debug.LogWarning(
+                                    $"{globalValueProperty.objectReferenceValue.name} is referencing a variable. Set reference type to variable or change {globalValueProperty.objectReferenceValue.name} to be used as a constant.",
+                                    property.serializedObject.targetObject);
+                            }
+                        */
+                        break;
+                    case Persistence.Variable:
+                        DrawOnChangeEvents(contentRect, valueRect, isPartOfArray, property);
+                        //Throw warning if reference is referencing a constant while referring to it as a variable
+                        if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
+                            if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
+                            {
+                                EditorGUI.DrawRect(valueRect, _wrongFieldColor);
+                                Debug.LogWarning(
+                                    $"{globalValueProperty.objectReferenceValue.name} is referencing a constant. Set reference type to constant or change {globalValueProperty.objectReferenceValue.name} to be used as a variable.",
+                                    property.serializedObject.targetObject);
+                            }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
-
-            switch (persistence)
+            else
             {
-                case Persistence.Constant:
-                    /*
-                    if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
-                        if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Variable)
-                        {
-                            EditorGUI.DrawRect(valueRect, _wrongFieldColor);
-                            Debug.LogWarning(
-                                $"{globalValueProperty.objectReferenceValue.name} is referencing a variable. Set reference type to variable or change {globalValueProperty.objectReferenceValue.name} to be used as a constant.",
-                                property.serializedObject.targetObject);
-                        }
-                    */
-                    break;
-                case Persistence.Variable:
-                    DrawOnChangeEvents(contentRect, valueRect, isPartOfArray, property);
-                    //Throw warning if reference is referencing a constant while referring to it as a variable
-                    if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
-                        if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
-                        {
-                            EditorGUI.DrawRect(valueRect, _wrongFieldColor);
-                            Debug.LogWarning(
-                                $"{globalValueProperty.objectReferenceValue.name} is referencing a constant. Set reference type to constant or change {globalValueProperty.objectReferenceValue.name} to be used as a variable.",
-                                property.serializedObject.targetObject);
-                        }
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var labelRect = EditorGUI.PrefixLabel(position, label);
+                var contentRect = EditorGUI.PrefixLabel(position, label);
+
+                var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
+                var scope = (Scope)scopeProperty.enumValueIndex;
+                switch (scope)
+                {
+                    case Scope.Local:
+                        var localValueProperty = property.FindPropertyRelative(_localValuePropertyPath);
+                        EditorGUI.PropertyField(contentRect, localValueProperty, GUIContent.none);
+                        break;
+                    case Scope.Global:
+                        var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
+                        EditorGUI.PropertyField(contentRect, globalValueProperty, GUIContent.none);
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
 
             EditorGUI.indentLevel = originalIndentLevel;
@@ -168,11 +199,11 @@ namespace SOA.Base
                     EditorGUIUtility.singleLineHeight);
                 eventsFoldOutRect = EditorGUI.IndentedRect(eventsFoldOutRect);
                 EditorGUI.indentLevel += 1;
-                property.FindPropertyRelative(_foldOutEventsPropertyPath).boolValue = EditorGUI.Foldout(
-                    eventsFoldOutRect, property.FindPropertyRelative(_foldOutEventsPropertyPath).boolValue,
-                    _onChangeEventsFoldOutHeader);
+                property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue = EditorGUI.Foldout(
+                    eventsFoldOutRect, property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue,
+                    _onChangeEventsFoldoutHeader);
 
-                if (property.FindPropertyRelative(_foldOutEventsPropertyPath).boolValue)
+                if (property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue)
                 {
                     if (!isPartOfArray)
                         EditorGUI.indentLevel += 1;
@@ -210,9 +241,9 @@ namespace SOA.Base
             var persistencePropertyHeight = EditorGUI.GetPropertyHeight(persistenceProperty);
             var scope = (Scope) scopeProperty.enumValueIndex;
             var persistence = (Persistence) persistenceProperty.enumValueIndex;
-            var usageHeight = scopePropertyHeight > persistencePropertyHeight
+            var usageHeight = (scopePropertyHeight > persistencePropertyHeight
                 ? scopePropertyHeight
-                : persistencePropertyHeight;
+                : persistencePropertyHeight) + +_breakLine;
             float valueHeight;
             switch (scope)
             {
@@ -227,27 +258,35 @@ namespace SOA.Base
             }
 
             var usageAndValueHeight = usageHeight + _breakLine + valueHeight;
-            switch (persistence)
+
+            var isFoldedOut = property.FindPropertyRelative(_foldoutPropertyPath).boolValue;
+            if (isFoldedOut)
             {
-                case Persistence.Constant:
-
-                    return usageAndValueHeight;
-                case Persistence.Variable:
+                switch (persistence)
                 {
-                    var eventsFoldoutHeight = EditorGUIUtility.singleLineHeight;
-                    var onValueChangedHeight = property.GetRelativePropertyHeight(_onValueChangedPropertyPath);
-                    var onValueChangedWithHistoryHeight =
-                        property.GetRelativePropertyHeight(_onValueChangedWithHistoryPropertyPath);
-                    var foldedInHeight = usageAndValueHeight + eventsFoldoutHeight;
-                    var foldedOutHeight = foldedInHeight + _breakLine + onValueChangedHeight + _breakLine +
-                                          onValueChangedWithHistoryHeight + EditorGUIUtility.singleLineHeight;
-                    return property.FindPropertyRelative(_foldOutEventsPropertyPath).boolValue
-                        ? foldedOutHeight
-                        : foldedInHeight;
-                }
+                    case Persistence.Constant:
+                        return usageAndValueHeight;
+                    case Persistence.Variable:
+                    {
+                        var eventsFoldoutHeight = EditorGUIUtility.singleLineHeight;
+                        var onValueChangedHeight = property.GetRelativePropertyHeight(_onValueChangedPropertyPath);
+                        var onValueChangedWithHistoryHeight =
+                            property.GetRelativePropertyHeight(_onValueChangedWithHistoryPropertyPath);
+                        var foldedInHeight = usageAndValueHeight + eventsFoldoutHeight;
+                        var foldedOutHeight = foldedInHeight + _breakLine + onValueChangedHeight + _breakLine +
+                                              onValueChangedWithHistoryHeight + EditorGUIUtility.singleLineHeight;
+                        return property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue
+                            ? foldedOutHeight
+                            : foldedInHeight;
+                    }
 
-                default:
-                    throw new ArgumentOutOfRangeException();
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
+            else
+            {
+                return valueHeight;
             }
         }
     }

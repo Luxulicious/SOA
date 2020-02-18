@@ -65,9 +65,10 @@ namespace SOA.Base
         [SerializeField] protected V _globalValue;
         [SerializeField] protected E _onValueChangedEvent = new E();
         [SerializeField] protected EE _onValueChangedWithHistoryEvent = new EE();
+        [SerializeField, HideInInspector] private bool _foldout = false;
 
         [SerializeField, HideInInspector] private V _prevGlobalValue;
-        [SerializeField, HideInInspector] private bool _foldOutEvents = false;
+        [SerializeField, HideInInspector] private bool _foldoutEvents = false;
 
         public Reference()
         {
