@@ -6,7 +6,6 @@ Known bugs and todo's:
 Variables:
 
 Reference:
-Make reference collapsable
 
 Generation:
 Optimize type search for generation.
