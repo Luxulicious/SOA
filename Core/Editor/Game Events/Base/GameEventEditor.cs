@@ -21,7 +21,7 @@ namespace SOA.Base
         }
     }
 
-    public abstract class GameEventEditor<ESO, E, T> : Editor where ESO : GameEvent<E, T> where E : UnityEvent<T>, new()
+    public abstract class GameEventEditor<GE, E, T> : Editor where GE : GameEvent<E, T> where E : UnityEvent<T>, new()
     {
         public override void OnInspectorGUI()
         {
@@ -29,7 +29,7 @@ namespace SOA.Base
 
             GUI.enabled = Application.isPlaying;
 
-            var eso = target as ESO;
+            var eso = target as GE;
             if (GUILayout.Button("Invoke"))
             {
                 eso.Invoke(default(T));
