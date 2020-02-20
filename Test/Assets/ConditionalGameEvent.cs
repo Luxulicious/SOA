@@ -21,13 +21,7 @@ namespace SOA.Base
 
         [SerializeField] protected T _valueToCompare;
 
-        public ComparisonOperator Operator
-        {
-            get => _operator;
-            set => _operator = value;
-        }
-
-        public bool Compare(T value)
+        public virtual bool Compare(T value)
         {
             var comparison = Comparer<T>.Default.Compare(value, _valueToCompare);
             switch (_operator)
@@ -46,7 +40,7 @@ namespace SOA.Base
         }
     }
 
-//TODO This class can't currently be implemented properly since <T>GameEventListeners won't pick this as a valid ScriptableObject
+    //TODO This class can't currently be implemented properly since <T>GameEventListeners won't pick this as a valid ScriptableObject
     [Obsolete(
         "TODO This class can't currently be implemented properly since <T>GameEventListeners won't pick this as a valid ScriptableObject")]
     public abstract class ConditionalGameEvent<C, E, T> : GameEvent<E, T>
