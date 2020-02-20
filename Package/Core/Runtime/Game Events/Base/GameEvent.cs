@@ -11,7 +11,7 @@ namespace SOA.Base
     {
         [SerializeField] private UnityEvent _event = new UnityEvent();
 
-        public void Invoke()
+        public virtual void Invoke()
         {
             _event.Invoke();
         }
@@ -41,7 +41,7 @@ namespace SOA.Base
     {
         [SerializeField] protected E _event = new E();
 
-        public void Invoke(T t0)
+        public virtual void Invoke(T t0)
         {
             _event.Invoke(t0);
         }
