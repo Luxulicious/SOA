@@ -14,16 +14,7 @@ public enum ComparisonOperator
     Unequal
 }
 
-public abstract class ConditionalGameEvent<E, T> : GameEvent<E, T> where
-    E : UnityEvent<T>, new()
-{
-    public override void Invoke(T t0)
-    {
-        base.Invoke(t0);
-    }
-}
-
-public abstract class ComparableConditionalGameEvent<E, T> : GameEvent<E, T> 
+public abstract class ConditionalGameEvent<E, T> : GameEvent<E, T> 
     where E : UnityEvent<T>, new()
 {
     [Serializable]
