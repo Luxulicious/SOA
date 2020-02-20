@@ -25,7 +25,6 @@ Add a standard component for event listeners
 Find a way for a game event listener to auto (un)subscribe whenever the reference is changed (probably most easily accomplished via propertydrawer)
 
 Packaging:
-Exclude test project from package but include it in the repository
 
 Additional features:
 Stacktracing event and variable change invocation
