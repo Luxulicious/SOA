@@ -1,28 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
-using SOA.Base;
 using UnityEngine;
 using UnityEngine.Events;
 
-
-[Serializable]
-public enum ComparisonOperator
+namespace SOA.Base
 {
-    Equals,
-    LessThan,
-    GreaterThan,
-    Unequal
-}
+    [Serializable]
+    public enum ComparisonOperator
+    {
+        Equals,
+        LessThan,
+        GreaterThan,
+        Unequal
+    }
 
-public abstract class ConditionalGameEvent<E, T> : GameEvent<E, T> 
-    where E : UnityEvent<T>, new()
-{
     [Serializable]
     public class Condition<T>
     {
         [SerializeField] protected ComparisonOperator _operator;
 
         [SerializeField] protected T _valueToCompare;
+
         public ComparisonOperator Operator
         {
             get => _operator;
@@ -48,28 +46,34 @@ public abstract class ConditionalGameEvent<E, T> : GameEvent<E, T>
         }
     }
 
-    [SerializeField] protected Condition<T>[] _conditions;
-
-    /// <summary>
-    /// Iterates over conditions and applies AND between them
-    /// </summary>
-    /// <param name="value"></param>
-    /// <returns></returns>
-    protected virtual bool Compare(T value)
+//TODO This class can't currently be implemented properly since <T>GameEventListeners won't pick this as a valid ScriptableObject
+    [Obsolete(
+        "TODO This class can't currently be implemented properly since <T>GameEventListeners won't pick this as a valid ScriptableObject")]
+    public abstract class ConditionalGameEvent<C, E, T> : GameEvent<E, T>
+        where C : Condition<T> where E : UnityEvent<T>, new()
     {
-        foreach (var c in _conditions)
+        [SerializeField] protected C[] _conditions;
+
+        /// <summary>
+        /// Iterates over conditions and applies AND between them
+        /// </summary>
+        /// <param name="value"></param>
+        /// <returns></returns>
+        protected virtual bool Compare(T value)
         {
-            if (!c.Compare(value))
-                return false;
+            foreach (var c in _conditions)
+            {
+                if (!c.Compare(value))
+                    return false;
+            }
+
+            return true;
         }
-        return true;
+
+        public override void Invoke(T value)
+        {
+            if (Compare(value))
+                base.Invoke(value);
+        }
     }
-
-    public override void Invoke(T value)
-    {
-        if (Compare(value))
-            base.Invoke(value);
-    }
-
-
 }
