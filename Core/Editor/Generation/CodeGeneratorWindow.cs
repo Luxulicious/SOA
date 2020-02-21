@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
@@ -21,7 +23,7 @@ namespace SOA.Generation
 
     public class CodeGeneratorWindow : EditorWindow
     {
-        public static int maxTypesShown = 10;
+        public static int typeLimit = 10;
 
         public static List<Template> templates = new List<Template>
         {
@@ -92,17 +94,42 @@ namespace SOA.Generation
         public static bool individualSubfolders = true;
         public static bool advancedFoldedOut = false;
 
+        private static List<string> _namespacesToExclude = new List<string>()
+        {
+            "UnityScript.Lang.",
+            "Boo.Lang.",
+            "UnityEditor.",
+            "UnityEditorInternal.",
+            "CompilerGenerated.",
+            "SOA."
+        };
+
         public static Color excludedTemplateBackgroundColor = new Color(1, 0, 0, 0.2f);
         public static Color includeTemplateBackgroundColor = new Color(0, 1, 0, 0.2f);
         public static Color invalidTemplateBackgroundColor = new Color(1, 0.5f, 0, 0.2f);
 
-        public static Vector2 scrollPos = new Vector2();
+        public static Vector2 scrollPos;
+
+        public static string searchQuery;
+        public static bool searchIsLoading = false;
+
+        public static Dictionary<string, Type> availableTypes = new Dictionary<string, Type>();
+        public static Dictionary<string, Type> filteredAvailableTypes = new Dictionary<string, Type>();
+        public static Dictionary<string, Type> selectedTypes = new Dictionary<string, Type>();
 
         [MenuItem("Assets/SOA/Generate Types")]
         [MenuItem("Assets/Create/SOA/Generate Types")]
         public static void ShowWindow()
         {
             EditorWindow.GetWindow(typeof(CodeGeneratorWindow), false, "Generate Types");
+        }
+
+        void OnEnable()
+        {
+            availableTypes = GetAvailableTypes();
+            Debug.Log($"Available type count: {availableTypes.Count}");
+
+            Search("", typeLimit);
         }
 
         void OnGUI()
@@ -113,29 +140,58 @@ namespace SOA.Generation
             scrollPos = GUILayout.BeginScrollView(scrollPos, false, true,
                 GUILayout.ExpandHeight(true));
 
-            EditorGUILayout.LabelField("Available Data Types");
-
-            for (int i = 0; i < maxTypesShown; i++)
+            EditorGUILayout.LabelField("Available Types");
+            //Search available types
+            EditorGUI.BeginChangeCheck();
+            searchQuery = EditorGUILayout.TextField("Search", searchQuery);
+            if (EditorGUI.EndChangeCheck())
             {
-                EditorGUILayout.BeginHorizontal();
-                if (GUILayout.Button("+", GUILayout.MaxWidth(25)))
-                    Add("");
-                EditorGUILayout.LabelField("Test");
-                EditorGUILayout.EndHorizontal();
+                Search(searchQuery, typeLimit);
+            }
+
+            //Available types
+            if (!searchIsLoading)
+            {
+                foreach (var availableTypeName
+                    in filteredAvailableTypes.Keys)
+                {
+                    EditorGUILayout.BeginHorizontal();
+                    if (GUILayout.Button("+", GUILayout.MaxWidth(25)))
+                    {
+                        Add(availableTypeName);
+                        Search(searchQuery, typeLimit);
+                        break;
+                    }
+
+                    EditorGUILayout.LabelField(availableTypeName);
+                    EditorGUILayout.EndHorizontal();
+                }
+            }
+            else
+            {
+                EditorGUILayout.LabelField($"Loading");
             }
 
             EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Selected Data Types");
-            for (int i = 0; i < maxTypesShown; i++)
+            EditorGUILayout.LabelField("Selected Types");
+            //Selected types
+            foreach (var selectedTypeName in selectedTypes.Keys)
             {
+                if (selectedTypes.Count >= typeLimit) break;
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("-", GUILayout.MaxWidth(25)))
-                    Remove("");
-                EditorGUILayout.LabelField("Test");
+                {
+                    Remove(selectedTypeName);
+                    Search(searchQuery, typeLimit);
+                    break;
+                }
+
+                EditorGUILayout.LabelField(selectedTypeName);
                 EditorGUILayout.EndHorizontal();
             }
 
             EditorGUILayout.Space();
+            //Creation options
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.TextField("Creation Path", path);
             if (GUILayout.Button("Browse..."))
@@ -144,13 +200,17 @@ namespace SOA.Generation
             overwrite = EditorGUILayout.Toggle("Overwrite", overwrite);
             individualSubfolders = EditorGUILayout.Toggle("Individual Subfolders", individualSubfolders);
 
+
             EditorGUILayout.Space();
+            //Creation buttons
             if (GUILayout.Button("Create"))
                 Create();
-            if (GUILayout.Button("Regenerate"))
+            /*
+            if (GUILayout.Button("Regenerate (WIP)"))
                 Regenerate();
-            if (GUILayout.Button("Regenerate All"))
+            if (GUILayout.Button("Regenerate All (WIP)"))
                 RegenerateAll();
+            */
             EditorGUILayout.Space();
             advancedFoldedOut = EditorGUILayout.Foldout(advancedFoldedOut, "Advanced");
             if (advancedFoldedOut)
@@ -190,14 +250,68 @@ namespace SOA.Generation
             EditorGUI.indentLevel = originalIndentLevel;
         }
 
-        private void Add(string empty)
+        void OnInspectorUpdate()
         {
-            throw new NotImplementedException();
+            // This will only get called 10 times per second.
+            try
+            {
+                if (Event.current.type != EventType.Layout) return;
+            }
+            catch (Exception e)
+            {
+            }
+
+            Repaint();
         }
 
-        private void Remove(string empty)
+        private void Add(string typeName)
         {
-            throw new NotImplementedException();
+            selectedTypes.Add(typeName, filteredAvailableTypes[typeName]);
+            filteredAvailableTypes.Remove(typeName);
+        }
+
+        private async void Search(string query, int limit)
+        {
+            filteredAvailableTypes = new Dictionary<string, Type>();
+            searchIsLoading = true;
+            await Task.Run(() =>
+            {
+                foreach (var availableType in availableTypes)
+                {
+                    if (filteredAvailableTypes.Count >= limit)
+                        break;
+                    if (!string.IsNullOrEmpty(query))
+                    {
+                        if (!availableType.Key.StartsWith(query, true, CultureInfo.InvariantCulture) &&
+                            !availableType.Value.Name.StartsWith(query, true, CultureInfo.InvariantCulture))
+                        {
+                            continue;
+                        }
+                    }
+
+                    var alreadySelectedType = false;
+                    foreach (var selectedType in selectedTypes)
+                    {
+                        if (selectedType.Value == availableType.Value)
+                        {
+                            alreadySelectedType = true;
+                            break;
+                        }
+                    }
+
+                    if (alreadySelectedType)
+                        continue;
+
+                    filteredAvailableTypes.Add(availableType.Key, availableType.Value);
+                }
+
+                searchIsLoading = false;
+            });
+        }
+
+        private void Remove(string typeName)
+        {
+            selectedTypes.Remove(typeName);
         }
 
         private Template DrawTemplate(Template template)
@@ -291,7 +405,88 @@ namespace SOA.Generation
 
         private void Create()
         {
-            throw new NotImplementedException();
+            Debug.Log("Creating...");
+            foreach (var selectedType in selectedTypes)
+            {
+                CodeGenerator.Generate(selectedType.Value);
+                Debug.Log($"Created: {selectedType.Value?.Name}");
+            }
+        }
+
+        private Dictionary<string, Type> GetAvailableTypes()
+        {
+            var currentDomainsAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var currentDomainsTypes = new Dictionary<string, Type>();
+            foreach (var assembly in currentDomainsAssemblies)
+            {
+                foreach (var t in assembly.GetExportedTypes())
+                {
+                    var invalidNamespace = false;
+                    foreach (var namespaceToExclude in _namespacesToExclude)
+                    {
+                        if (t.Namespace != null)
+                            if (t.Namespace.StartsWith(namespaceToExclude))
+                            {
+                                invalidNamespace = true;
+                                break;
+                            }
+
+                        if (t.FullName != null)
+                            if (t.FullName.StartsWith(namespaceToExclude))
+                            {
+                                invalidNamespace = true;
+                                break;
+                            }
+                    }
+
+                    if (invalidNamespace)
+                        continue;
+
+                    var key = t.FullName ?? t.Name;
+                    var value = t;
+                    try
+                    {
+                        currentDomainsTypes.Add(key, value);
+                    }
+                    catch (ArgumentException)
+                    {
+                        continue;
+                    }
+                }
+            }
+
+            return currentDomainsTypes;
+
+            /*
+            var allAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var allTypeNames = new Dictionary<string, Type>();
+            Func<Type, bool> typePredicate = x =>
+                !x.IsAbstract &&
+                !x.ContainsGenericParameters;
+            foreach (var a in allAssemblies)
+            {
+                foreach (var t in a.GetExportedTypes().Where(typePredicate))
+                {
+                    var skip = false;
+                    foreach (var n in _namespacesToExclude)
+                    {
+                        if (t.Namespace?.StartsWith(n) ?? (t.FullName?.StartsWith(n) ?? false))
+                        {
+                            skip = true;
+                            break;
+                        }
+                    }
+
+                    if (skip)
+                        continue;
+                    var key = t.Name != null ? t.Name :
+                        t.FullName.Contains(".") ? t.FullName.Substring(t.FullName.LastIndexOf(".")) : t.FullName;
+                    var value = t;
+                    allTypeNames.Add(key, value);
+                }
+            }
+            return allTypeNames;
+            */
         }
 
         /*
