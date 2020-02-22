@@ -14,84 +14,83 @@ using UnityEngine;
 namespace SOA.Generation
 {
     [Serializable]
-    public class Template
+    public class TemplateEntry
     {
         public bool include = true;
-        public string name = "";
-        public string filePath = "SOA/Package/Core/Editor/Generation/Templates/...";
+        public Template template;
+
+        public bool Include
+        {
+            get => include;
+            set => include = value;
+        }
+
+        public Template Template
+        {
+            get => template;
+            set => template = value;
+        }
+
+        public TemplateEntry(Template template, bool include)
+        {
+            this.template = template;
+            this.include = include;
+        }
+
+        public TemplateEntry()
+        {
+            this.template = new Template();
+            this.include = true;
+        }
     }
 
     public class CodeGeneratorWindow : EditorWindow
     {
         public static int typeLimit = 10;
 
-        public static List<Template> templates = new List<Template>
+        public static List<TemplateEntry> templateEntries = new List<TemplateEntry>
         {
             //Variables
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/VariableTemplate.template", name = "Variable",
-                include = true
-            },
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/VariableEditorTemplate.template",
-                name = "Variable Editor", include = true
-            },
+            new TemplateEntry(new Template("Variable",
+                "SOA/Package/Core/Editor/Generation/Templates/VariableTemplate.template", false), true),
+            new TemplateEntry(new Template("Variable Editor",
+                "SOA/Package/Core/Editor/Generation/Templates/VariableEditorTemplate.template", true), true),
             //References
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/ReferenceTemplate.template",
-                name = "Reference", include = true
-            },
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template",
-                name = "Reference Drawer", include = true
-            },
+            new TemplateEntry(new Template("Reference",
+                    "SOA/Package/Core/Editor/Generation/Templates/ReferenceTemplate.template", false),
+                true),
+            new TemplateEntry(new Template("Reference Drawer",
+                    "SOA/Package/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template", true),
+                true),
             //Game Events
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/GameEventTemplate.template",
-                name = "Game Event"
-            },
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/GameEventListenerTemplate.template",
-                name = "Game Event Listener", include = true
-            },
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/GameEventEditorTemplate.template",
-                name = "Game Event Editor", include = true
-            },
+            new TemplateEntry(new Template("Game Event",
+                    "SOA/Package/Core/Editor/Generation/Templates/GameEventTemplate.template", false),
+                true),
+            new TemplateEntry(new Template("Game Event Listener",
+                    "SOA/Package/Core/Editor/Generation/Templates/GameEventListenerTemplate.template", false),
+                true),
+            new TemplateEntry(new Template("Game Event Editor",
+                    "SOA/Package/Core/Editor/Generation/Templates/GameEventEditorTemplate.template", true),
+                true),
             //Unity Events
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/EventsTemplate.template",
-                name = "Unity Events", include = true
-            },
+            new TemplateEntry(new Template(
+                "Unity Events", "SOA/Package/Core/Editor/Generation/Templates/EventsTemplate.template",
+                false), true),
             //Multis 
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/ReferenceListVariableTemplate.template",
-                name = "Reference List Variable", include = false
-            },
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/ReferenceListVariableEditorTemplate.template",
-                name = "Reference List Variable Editor", include = false
-            },
-            new Template()
-            {
-                filePath = "SOA/Package/Core/Editor/Generation/Templates/ReferenceListTemplate.template",
-                name = "Reference List", include = false
-            }
+            new TemplateEntry(new Template("Reference List Variable",
+                    "SOA/Package/Core/Editor/Generation/Templates/ReferenceListVariableTemplate.template", false),
+                false),
+            new TemplateEntry(new Template("Reference List Variable Editor",
+                    "SOA/Package/Core/Editor/Generation/Templates/ReferenceListVariableEditorTemplate.template", true),
+                false),
+            new TemplateEntry(
+                new Template("Reference List",
+                    "SOA/Package/Core/Editor/Generation/Templates/ReferenceListTemplate.template", false), false)
         };
 
-        public static string path = "Assets/SOA/Generated";
+        public static string _creationFolderPath = "Assets/SOA/Generated";
         public static bool overwrite = false;
-        public static bool individualSubfolders = true;
+        public static bool _individualSubfolders = true;
         public static bool advancedFoldedOut = false;
 
         private static List<string> _namespacesToExclude = new List<string>()
@@ -115,7 +114,7 @@ namespace SOA.Generation
 
         public static Dictionary<string, Type> availableTypes = new Dictionary<string, Type>();
         public static Dictionary<string, Type> filteredAvailableTypes = new Dictionary<string, Type>();
-        public static Dictionary<string, Type> selectedTypes = new Dictionary<string, Type>();
+        public static Dictionary<string, Type> _selectedTypes = new Dictionary<string, Type>();
 
         [MenuItem("Assets/SOA/Generate Types")]
         [MenuItem("Assets/Create/SOA/Generate Types")]
@@ -182,24 +181,24 @@ namespace SOA.Generation
                 EditorGUILayout.LabelField("Path");
                 EditorGUILayout.EndHorizontal();
 
-                var templatesToRemove = new List<Template>();
-                for (int i = 0; i < templates.Count; i++)
+                var templatesToRemove = new List<TemplateEntry>();
+                for (int i = 0; i < templateEntries.Count; i++)
                 {
-                    var drawnTemplate = DrawTemplate(templates[i]);
+                    var drawnTemplate = DrawTemplate(templateEntries[i]);
                     if (drawnTemplate != null)
-                        templates[i] = drawnTemplate;
+                        templateEntries[i] = drawnTemplate;
                     else
-                        templatesToRemove.Add(templates[i]);
+                        templatesToRemove.Add(templateEntries[i]);
                 }
 
                 foreach (var templateToRemove in templatesToRemove)
                 {
-                    templates.Remove(templateToRemove);
+                    templateEntries.Remove(templateToRemove);
                 }
 
                 if (GUILayout.Button("+"))
                 {
-                    templates.Add(new Template());
+                    templateEntries.Add(new TemplateEntry());
                 }
 
                 EditorGUILayout.EndVertical();
@@ -221,19 +220,19 @@ namespace SOA.Generation
         private static void DrawCreationOptions()
         {
             EditorGUILayout.BeginHorizontal();
-            EditorGUILayout.TextField("Creation Path", path);
+            EditorGUILayout.TextField("Creation Path", _creationFolderPath);
             if (GUILayout.Button("Browse..."))
-                path = EditorUtility.OpenFolderPanel("Select a path to save to", "", "");
+                _creationFolderPath = EditorUtility.OpenFolderPanel("Select a path to save to", "", "");
             EditorGUILayout.EndHorizontal();
             overwrite = EditorGUILayout.Toggle("Overwrite", overwrite);
-            individualSubfolders = EditorGUILayout.Toggle("Individual Subfolders", individualSubfolders);
+            _individualSubfolders = EditorGUILayout.Toggle("Individual Subfolders", _individualSubfolders);
         }
 
         private void DrawSelectedTypes()
         {
-            foreach (var selectedTypeName in selectedTypes.Keys)
+            foreach (var selectedTypeName in _selectedTypes.Keys)
             {
-                if (selectedTypes.Count >= typeLimit) break;
+                if (_selectedTypes.Count >= typeLimit) break;
                 EditorGUILayout.BeginHorizontal();
                 if (GUILayout.Button("-", GUILayout.MaxWidth(25)))
                 {
@@ -287,7 +286,7 @@ namespace SOA.Generation
             {
                 if (Event.current.type != EventType.Layout) return;
             }
-            catch (Exception e)
+            catch (Exception)
             {
             }
 
@@ -296,7 +295,7 @@ namespace SOA.Generation
 
         private void Add(string typeName)
         {
-            selectedTypes.Add(typeName, filteredAvailableTypes[typeName]);
+            _selectedTypes.Add(typeName, filteredAvailableTypes[typeName]);
             filteredAvailableTypes.Remove(typeName);
         }
 
@@ -320,7 +319,7 @@ namespace SOA.Generation
                     }
 
                     var alreadySelectedType = false;
-                    foreach (var selectedType in selectedTypes)
+                    foreach (var selectedType in _selectedTypes)
                     {
                         if (selectedType.Value == availableType.Value)
                         {
@@ -341,25 +340,27 @@ namespace SOA.Generation
 
         private void Remove(string typeName)
         {
-            selectedTypes.Remove(typeName);
+            _selectedTypes.Remove(typeName);
         }
 
-        private Template DrawTemplate(Template template)
+        private TemplateEntry DrawTemplate(TemplateEntry templateEntry)
         {
             GUIStyle style = null;
-            style = GetTemplateStyle(template);
+            style = GetTemplateStyle(templateEntry);
 
             if (style != null)
                 EditorGUILayout.BeginHorizontal(style);
             else
                 EditorGUILayout.BeginHorizontal();
-            template.include = EditorGUILayout.Toggle(template.include);
-            EditorGUILayout.TextField(template.name);
-            EditorGUILayout.TextField(template.filePath);
+            templateEntry.include = EditorGUILayout.Toggle(templateEntry.include);
+            EditorGUILayout.TextField(templateEntry.Template.Name);
+            EditorGUILayout.TextField(templateEntry.Template.FilePath);
             if (GUILayout.Button("Browse..."))
             {
                 var pathSelected = EditorUtility.OpenFilePanel("Select a template to use", "", "template");
-                template.filePath = !string.IsNullOrEmpty(pathSelected) ? pathSelected : template.filePath;
+                templateEntry.Template.FilePath = !string.IsNullOrEmpty(pathSelected)
+                    ? pathSelected
+                    : templateEntry.Template.FilePath;
             }
 
             if (GUILayout.Button("-", GUILayout.MaxWidth(25)))
@@ -368,13 +369,13 @@ namespace SOA.Generation
             }
 
             EditorGUILayout.EndHorizontal();
-            return template;
+            return templateEntry;
         }
 
-        private static GUIStyle GetTemplateStyle(Template template)
+        private static GUIStyle GetTemplateStyle(TemplateEntry templateEntry)
         {
             GUIStyle style = null;
-            if (!template.include)
+            if (!templateEntry.include)
             {
                 style = new GUIStyle();
                 var background = new Texture2D(1, 1);
@@ -385,7 +386,7 @@ namespace SOA.Generation
             }
             else
             {
-                var isValid = IsValidTemplate(template);
+                var isValid = IsValidTemplate(templateEntry);
                 if (isValid)
                 {
                     style = new GUIStyle();
@@ -409,11 +410,11 @@ namespace SOA.Generation
             return style;
         }
 
-        private static bool IsValidTemplate(Template template)
+        private static bool IsValidTemplate(TemplateEntry templateEntry)
         {
             //TODO Replace this statement with an actual check
             var validPath = true;
-            var endsWithDotTemplate = template.filePath.EndsWith("." + "template");
+            var endsWithDotTemplate = templateEntry.Template.FilePath.EndsWith("." + "template");
             var isValid = endsWithDotTemplate && validPath;
             return isValid;
         }
@@ -435,12 +436,16 @@ namespace SOA.Generation
 
         private void Create()
         {
-            Debug.Log("Creating...");
-            foreach (var selectedType in selectedTypes)
-            {
-                CodeGenerator.Generate(selectedType.Value);
-                Debug.Log($"Created: {selectedType.Value?.Name}");
-            }
+            var request = CreateRequest();
+            CodeGenerator.Generate(request);
+        }
+
+        private static GenerationRequest CreateRequest()
+        {
+            var templates = templateEntries.Select(templateEntry => templateEntry.template).ToArray();
+            var selectedTypes = _selectedTypes.Values.ToArray();
+            GenerationRequest request = new GenerationRequest(templates, selectedTypes, _creationFolderPath, _individualSubfolders, overwrite);
+            return request;
         }
 
         private Dictionary<string, Type> GetAvailableTypes()
