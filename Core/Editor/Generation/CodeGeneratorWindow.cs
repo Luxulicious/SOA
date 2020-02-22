@@ -126,8 +126,6 @@ namespace SOA.Generation
         void OnEnable()
         {
             availableTypes = GetAvailableTypes();
-            Debug.Log($"Available type count: {availableTypes.Count}");
-
             Search("", typeLimit);
         }
 
