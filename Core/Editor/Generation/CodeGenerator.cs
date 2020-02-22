@@ -1,38 +1,23 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using JetBrains.Annotations;
-using SOA.Base;
-using UnityEditor;
 using UnityEngine;
 
 [Serializable]
 public class Template
 {
-    private string _name;
-    private string _filePath;
+    private string _filePath = "";
     private bool _isEditor = false;
 
     public Template()
     {
     }
 
-    public Template(string name, string filePath, bool isEditor)
+    public Template(string filePath, bool isEditor)
     {
-        this._name = name;
         this._filePath = filePath;
         this._isEditor = isEditor;
     }
-
-    public string Name
-    {
-        get => _name;
-        set => _name = value;
-    }
-
+    
     public string FilePath
     {
         get => _filePath;
@@ -46,19 +31,85 @@ public class Template
     }
 }
 
+public static class TemplateExtensions
+{
+    public static bool FilePathExists(this Template template)
+    {
+        return File.Exists(template.FilePath);
+    }
+}
+
+
+public class NonExistingTemplateFilePathException : Exception
+{
+    protected Template _template;
+
+    public NonExistingTemplateFilePathException(string message, Template template) : base(message)
+    {
+        this._template = template;
+    }
+}
+
 [Serializable]
 public class GenerationRequest
 {
-    private Template[] _templates;
+    public class TemplateRequest
+    {
+        private Template _template;
+        private string _subfolderName;
+        private string _fileNameSuffix = "";
+
+        public Template Template
+        {
+            get => _template;
+            set => _template = value;
+        }
+
+        public string SubfolderName
+        {
+            get => _subfolderName;
+            set => _subfolderName = value;
+        }
+
+        public string FileNameSuffix
+        {
+            get => _fileNameSuffix;
+            set => _fileNameSuffix = value;
+        }
+
+        public TemplateRequest(Template template, string fileNameSuffix, string subfolderName = "")
+        {
+            _template = template;
+            _fileNameSuffix = fileNameSuffix;
+            _subfolderName = subfolderName;
+        }
+    }
+
+    private TemplateRequest[] _templateRequests;
     private Type[] _types;
     private string _creationFolderPath = "Assets/SOA/Generated";
     private bool _overwrite = false;
     private bool _individualSubfolders = true;
 
-    public Template[] Templates
+    public TemplateRequest[] TemplateRequests
     {
-        get => _templates;
-        set => _templates = value;
+        get => _templateRequests;
+        set
+        {
+            Debug.Log("Checking if template file paths exist...");
+            foreach (var templateRequest in value)
+            {
+                if (!templateRequest.Template.FilePathExists())
+                {
+                    throw new NonExistingTemplateFilePathException(
+                        $"File \"{templateRequest.Template.FilePath}\" does not exist for template named \"{templateRequest.FileNameSuffix}\"",
+                        templateRequest.Template);
+                }
+            }
+
+            Debug.Log("All template file paths are exist!");
+            _templateRequests = value;
+        }
     }
 
     public Type[] Types
@@ -85,14 +136,15 @@ public class GenerationRequest
         set => _individualSubfolders = value;
     }
 
-    public GenerationRequest(Template[] templates, Type[] types, string creationFolderPath = "Assets/SOA/Generated", bool overwrite = false,
+    public GenerationRequest(TemplateRequest[] templateRequests, Type[] types, string creationFolderPath = "Assets/SOA/Generated",
+        bool overwrite = false,
         bool individualSubfolders = true)
     {
-        this._templates = templates;
-        this._types = types;
-        this._creationFolderPath = creationFolderPath;
-        this._overwrite = overwrite;
-        this._individualSubfolders = individualSubfolders;
+        this.TemplateRequests = templateRequests;
+        this.Types = types;
+        this.CreationFolderPath = creationFolderPath;
+        this.Overwrite = overwrite;
+        this.IndividualSubfolders = individualSubfolders;
     }
 }
 
@@ -100,7 +152,18 @@ public static class CodeGenerator
 {
     public static void Generate(GenerationRequest request)
     {
-        throw new NotImplementedException();
+        foreach (var type in request.Types)
+        {
+            Debug.Log($"Creating files for type of {type.Name}");
+            foreach (var templateRequest in request.TemplateRequests)
+            {
+                Debug.Log($"Creating {type.Name + templateRequest.FileNameSuffix}");
+
+                Debug.Log($"Finished creating {type.Name + templateRequest.FileNameSuffix}");
+            }
+
+            Debug.Log($"Finished creating files for type of {type.Name}");
+        }
     }
 }
 
