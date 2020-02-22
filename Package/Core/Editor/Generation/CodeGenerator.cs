@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using UnityEditor;
 using UnityEngine;
 
 [Serializable]
@@ -17,7 +20,7 @@ public class Template
         this._filePath = filePath;
         this._isEditor = isEditor;
     }
-    
+
     public string FilePath
     {
         get => _filePath;
@@ -55,8 +58,10 @@ public class GenerationRequest
 {
     public class TemplateRequest
     {
+        private bool _overwrite;
         private Template _template;
-        private string _subfolderName;
+        private string _creationFolderPath = "";
+        private string _subfolderPath = "";
         private string _fileNameSuffix = "";
 
         public Template Template
@@ -65,10 +70,50 @@ public class GenerationRequest
             set => _template = value;
         }
 
-        public string SubfolderName
+        public bool Overwrite
         {
-            get => _subfolderName;
-            set => _subfolderName = value;
+            get => _overwrite;
+            set => _overwrite = value;
+        }
+
+
+        public string CreationFolderPath
+        {
+            get => _creationFolderPath;
+            set
+            {
+                _creationFolderPath = RemoveEndingSlashAndSpaces(value);
+                _creationFolderPath = RemoveStartingSlash(value);
+            }
+        }
+
+
+        public string SubfolderPath
+        {
+            get => _subfolderPath;
+            set => _subfolderPath = RemoveEndingSlashAndSpaces(value);
+        }
+
+        private string RemoveStartingSlash(string value)
+        {
+            var subfolderPath = value;
+            while (SubfolderPath.StartsWith("/") || SubfolderPath.StartsWith("\\") || SubfolderPath.EndsWith(" "))
+            {
+                subfolderPath = subfolderPath.Substring(1);
+            }
+
+            return subfolderPath;
+        }
+
+        private string RemoveEndingSlashAndSpaces(string value)
+        {
+            var subfolderPath = value;
+            while (SubfolderPath.EndsWith("/") || SubfolderPath.EndsWith("\\") || SubfolderPath.EndsWith(" "))
+            {
+                subfolderPath = subfolderPath.Substring(0, subfolderPath.Length - 1);
+            }
+
+            return subfolderPath;
         }
 
         public string FileNameSuffix
@@ -77,11 +122,14 @@ public class GenerationRequest
             set => _fileNameSuffix = value;
         }
 
-        public TemplateRequest(Template template, string fileNameSuffix, string subfolderName = "")
+        public TemplateRequest(Template template, string fileNameSuffix, string creationFolderPath,
+            string subfolderPath = "", bool overwrite = false)
         {
-            _template = template;
-            _fileNameSuffix = fileNameSuffix;
-            _subfolderName = subfolderName;
+            Template = template;
+            FileNameSuffix = fileNameSuffix;
+            SubfolderPath = subfolderPath;
+            CreationFolderPath = creationFolderPath;
+            Overwrite = overwrite;
         }
     }
 
@@ -96,7 +144,6 @@ public class GenerationRequest
         get => _templateRequests;
         set
         {
-            Debug.Log("Checking if template file paths exist...");
             foreach (var templateRequest in value)
             {
                 if (!templateRequest.Template.FilePathExists())
@@ -107,7 +154,6 @@ public class GenerationRequest
                 }
             }
 
-            Debug.Log("All template file paths are exist!");
             _templateRequests = value;
         }
     }
@@ -136,7 +182,8 @@ public class GenerationRequest
         set => _individualSubfolders = value;
     }
 
-    public GenerationRequest(TemplateRequest[] templateRequests, Type[] types, string creationFolderPath = "Assets/SOA/Generated",
+    public GenerationRequest(TemplateRequest[] templateRequests, Type[] types,
+        string creationFolderPath = "Assets/SOA/Generated",
         bool overwrite = false,
         bool individualSubfolders = true)
     {
@@ -154,169 +201,60 @@ public static class CodeGenerator
     {
         foreach (var type in request.Types)
         {
-            Debug.Log($"Creating files for type of {type.Name}");
+            //Debug.Log($"Creating files for type of {type.Name}");
             foreach (var templateRequest in request.TemplateRequests)
             {
                 Debug.Log($"Creating {type.Name + templateRequest.FileNameSuffix}");
-
-                Debug.Log($"Finished creating {type.Name + templateRequest.FileNameSuffix}");
+                var scriptContent =
+                    GetScriptContent(type, templateRequest.Template.FilePath, GetReplacementStrings(type));
+                var creationFilePath = GetCreationFilePath(templateRequest, type);
+                FileInfo file = new FileInfo(creationFilePath);
+                file.Directory.Create(); // If the directory already exists, this method does nothing.
+                File.WriteAllText(file.FullName, scriptContent);
+                //Debug.Log($"\n{scriptContent}");
+                //Debug.Log($"Finished creating {type.Name + templateRequest.FileNameSuffix}");
             }
 
-            Debug.Log($"Finished creating files for type of {type.Name}");
+            //Debug.Log($"Finished creating files for type of {type.Name}");
         }
+        AssetDatabase.Refresh();
+    }
+
+    private static string GetCreationFilePath(GenerationRequest.TemplateRequest templateRequest, Type type)
+    {
+        var creationFilePath = "";
+        creationFilePath += $"{templateRequest.CreationFolderPath}/";
+        var isEditor = templateRequest.Template.IsEditor;
+        creationFilePath += isEditor ? "Editor/" : "";
+        var subfoldPathExist = !string.IsNullOrEmpty(templateRequest.SubfolderPath);
+        creationFilePath += subfoldPathExist ? $"{templateRequest.SubfolderPath}/" : "";
+        creationFilePath += $"{type.Name}{templateRequest.FileNameSuffix}";
+        var fileExtension = "cs";
+        creationFilePath += $".{fileExtension}";
+        return creationFilePath;
+    }
+
+    public static string GetScriptContent(Type t, string templateFilePath, Dictionary<string, string> stringsToReplace)
+    {
+        var templateContent = File.ReadAllText(templateFilePath);
+        string output = templateContent;
+        foreach (var replacementString in stringsToReplace)
+        {
+            output = output.Replace(replacementString.Key, replacementString.Value);
+        }
+
+        return output;
+    }
+
+    //TODO Should be added into the request eventually
+    public static Dictionary<string, string> GetReplacementStrings(Type t)
+    {
+        var replacementStrings = new Dictionary<string, string>()
+        {
+            {"$TYPE$", t.Name},
+            {"$TYPENAME$", t.Name.First().ToString().ToUpper() + t.Name.Substring(1)},
+            {"$USING$", t.Namespace}
+        };
+        return replacementStrings;
     }
 }
-
-//public static class CodeGenerator
-//{
-//    private static string _generatedDirectoryName = "Generated";
-//    private static string _editorDirectoryName = "Editor";
-//    private static string _templatesFolderPath = "Generation/Templates";
-//    private static bool _overwriteExistingFiles = false;
-
-//    public struct PathAndNameDataEntry
-//    {
-//        private static string _packageName = "com.theluxgames.soa";
-//        public string TargetDirectory { get; set; }
-//        public string TemplateName { get; set; }
-//        public string TargetFileName { get; set; }
-
-//        public string GetTargetFilePath(Type t)
-//        {
-//            return TargetDirectory + "/" + string.Format(TargetFileName,
-//                       t.Name != null ? t.Name :
-//                       t.FullName.Contains(".") ? t.FullName.Substring(t.FullName.LastIndexOf(".") + 1) : t.FullName);
-//        }
-
-//        public string GetTemplatePath()
-//        {
-//            return "C:\\Users\\Tom\\Documents\\Github\\SOA\\Package\\Core\\Editor\\Generation\\Templates" + "/" + TemplateName;
-//            /*return "Packages" + "/"  + _packageName + "/" + "Package/" + "Core/Editor/" + _templatesFolderPath + "/" +
-//                   TemplateName;*/
-//        }
-
-//        public string GetScriptContents(Type t)
-//        {
-//            var templatePath = GetTemplatePath();
-//            var templateContent = File.ReadAllText(templatePath);
-
-//            var output = templateContent;
-//            var replacementStrings = ReplacementStrings(t);
-//            foreach (var replacementString in replacementStrings)
-//            {
-//                output = output.Replace(replacementString.Key, replacementString.Value);
-//            }
-
-//            return output;
-//        }
-
-//        public static Dictionary<string, string> ReplacementStrings(Type t)
-//        {
-//            var replacementStrings = new Dictionary<string, string>()
-//            {
-//                {"$TYPE$", t.Name},
-//                {"$TYPENAME$", t.Name.First().ToString().ToUpper() + t.Name.Substring(1)},
-//                {"$USING$", t.Namespace}
-//            };
-//            return replacementStrings;
-//        }
-//    }
-
-//    private static List<PathAndNameDataEntry> _pathAndNameData = new List<PathAndNameDataEntry>()
-//    {
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + "Game Events",
-//            TemplateName = "GameEventTemplate",
-//            TargetFileName = "{0}GameEvent.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + "Game Events",
-//            TemplateName = "GameEventListenerTemplate",
-//            TargetFileName = "{0}GameEventListener.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + "References",
-//            TemplateName = "ReferenceTemplate",
-//            TargetFileName = "{0}Reference.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + "Variables",
-//            TemplateName = "ReferenceListVariableTemplate",
-//            TargetFileName = "{0}ReferenceListVariable.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + "Variables",
-//            TemplateName = "VariableTemplate",
-//            TargetFileName = "{0}Variable.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
-//                              "Game Events",
-//            TemplateName = "GameEventEditorTemplate",
-//            TargetFileName = "{0}GameEventEditor.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
-//                              "References",
-//            TemplateName = "ReferenceDrawerTemplate",
-//            TargetFileName = "{0}ReferenceDrawer.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
-//                              "Variables",
-//            TemplateName = "VariableEditorTemplate",
-//            TargetFileName = "{0}VariableEditor.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + _editorDirectoryName + "/" +
-//                              "Variables",
-//            TemplateName = "ReferenceListVariableEditorTemplate",
-//            TargetFileName = "{0}ReferenceListVariableEditor.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" +
-//                              "Unity Events",
-//            TemplateName = "EventsTemplate",
-//            TargetFileName = "{0}Events.cs"
-//        },
-//        new PathAndNameDataEntry()
-//        {
-//            TargetDirectory = Application.dataPath + "/" + _generatedDirectoryName + "/" + "References",
-//            TemplateName = "ReferenceListTemplate",
-//            TargetFileName = "{0}ReferenceList.cs"
-//        }
-//    };
-
-//    public static void Generate(Type t)
-//    {
-//        foreach (var entry in _pathAndNameData)
-//        {
-//            var targetFilePath = entry.GetTargetFilePath(t);
-//            var scriptContents = entry.GetScriptContents(t);
-
-//            if (File.Exists(targetFilePath) && !_overwriteExistingFiles)
-//            {
-//                Debug.LogError($"Cannot generate file at {targetFilePath}, because it overwrites an existing file.");
-//                continue;
-//            }
-//            else
-//            {
-//                Debug.Log("Creating: " + targetFilePath);
-//                Directory.CreateDirectory(Path.GetDirectoryName(targetFilePath));
-//                File.WriteAllText(targetFilePath, scriptContents);
-//            }
-//        }
-
-//        AssetDatabase.Refresh();
-//    }
-//}

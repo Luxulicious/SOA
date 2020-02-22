@@ -14,7 +14,7 @@ namespace SOA.Generation
     {
         private bool _include = true;
         private Template _template;
-        private string _subfolderName;
+        private string _subfolderPath;
         private string _fileNameSuffix = "";
 
         public bool Include
@@ -29,10 +29,10 @@ namespace SOA.Generation
             set => _template = value;
         }
 
-        public string SubfolderName
+        public string SubfolderPath
         {
-            get => _subfolderName;
-            set => _subfolderName = value;
+            get => _subfolderPath;
+            set => _subfolderPath = value;
         }
 
         public string FileNameSuffix
@@ -41,11 +41,12 @@ namespace SOA.Generation
             set => _fileNameSuffix = value;
         }
 
-        public TemplateEntry(string fileNameSuffix, Template template, bool include = false)
+        public TemplateEntry(string fileNameSuffix, Template template, bool include = false, string subfolderPath = "")
         {
             this._template = template;
             this._fileNameSuffix = fileNameSuffix;
             this._include = include;
+            this._subfolderPath = subfolderPath;
         }
 
         public TemplateEntry()
@@ -95,46 +96,47 @@ namespace SOA.Generation
         }
 
         void OnEnable()
-        { 
+        {
             if (templateEntries == null)
                 templateEntries = new List<TemplateEntry>();
             if (templateEntries.Count < 1)
-            { 
+            {
                 templateEntries.AddRange(new List<TemplateEntry>()
-                {  
+                {
                     //Variables
-                    new TemplateEntry(" Variable", new Template(
+                    new TemplateEntry("Variable", new Template(
                         $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/VariableTemplate.template",
-                        false), true),
-                    new TemplateEntry(" Variable Editor", new Template(
+                        false), true, "Variable"),
+                    new TemplateEntry("VariableEditor", new Template(
                         $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/VariableEditorTemplate.template",
-                        true), true),
+                        true), true, "Variable"),
                     //References
-                    new TemplateEntry(" Reference", new Template(
+                    new TemplateEntry("Reference", new Template(
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/ReferenceTemplate.template",
                             false),
-                        true),
-                    new TemplateEntry(" Reference Drawer", new Template(
+                        true, "References"),
+                    new TemplateEntry("ReferenceDrawer", new Template(
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template",
                             true),
-                        true),
+                        true, "References"),
                     //Game Events
-                    new TemplateEntry(" Game Event", new Template(
+                    new TemplateEntry("GameEvent", new Template(
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/GameEventTemplate.template",
                             false),
-                        true),
-                    new TemplateEntry(" Game Event Listener", new Template(
+                        true, "Game Events"),
+                    new TemplateEntry("GameEventListener", new Template(
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/GameEventListenerTemplate.template",
                             false),
-                        true),
-                    new TemplateEntry(" Game Event Editor", new Template(
+                        true, "Game Events"),
+                    new TemplateEntry("GameEventEditor", new Template(
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/GameEventEditorTemplate.template",
                             true),
-                        true),
+                        true, "Game Events"),
                     //Unity Events
-                    new TemplateEntry(" Unity Events", new Template(
+                    new TemplateEntry("UnityEvents", new Template(
                         $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/EventsTemplate.template",
-                        false), true),
+                        false), true, "Unity Events"),
+                    /*
                     //Multis 
                     new TemplateEntry(" Reference List Variable", new Template(
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/ReferenceListVariableTemplate.template",
@@ -149,6 +151,7 @@ namespace SOA.Generation
                             $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/ReferenceListTemplate.template",
                             false),
                         false)
+                    */
                 });
             }
 
@@ -205,7 +208,7 @@ namespace SOA.Generation
                 EditorGUILayout.LabelField("Is Editor");
                 EditorGUILayout.LabelField("File Name Suffix");
                 if (_createSubfolders)
-                    EditorGUILayout.LabelField("Subfolder Name");
+                    EditorGUILayout.LabelField("Subfolder Path");
                 EditorGUILayout.LabelField("Path");
                 EditorGUILayout.EndHorizontal();
 
@@ -235,8 +238,10 @@ namespace SOA.Generation
 
         private void DrawCreationButtons()
         {
+            EditorGUI.BeginDisabledGroup(!_selectedTypes.Any());
             if (GUILayout.Button("Create"))
                 Create();
+            EditorGUI.EndDisabledGroup();
             /*
             if (GUILayout.Button("Regenerate (WIP)"))
                 Regenerate();
@@ -384,7 +389,7 @@ namespace SOA.Generation
             templateEntry.Template.IsEditor = EditorGUILayout.Toggle(templateEntry.Template.IsEditor);
             templateEntry.FileNameSuffix = EditorGUILayout.TextField(templateEntry.FileNameSuffix);
             if (_createSubfolders)
-                templateEntry.SubfolderName = EditorGUILayout.TextField(templateEntry.SubfolderName);
+                templateEntry.SubfolderPath = EditorGUILayout.TextField(templateEntry.SubfolderPath);
             templateEntry.Template.FilePath = EditorGUILayout.TextField(templateEntry.Template.FilePath);
             if (GUILayout.Button("Browse..."))
             {
@@ -468,6 +473,7 @@ namespace SOA.Generation
 
         private void Create()
         {
+            if (!_selectedTypes.Any()) return;
             var request = CreateRequest();
             CodeGenerator.Generate(request);
         }
@@ -482,7 +488,8 @@ namespace SOA.Generation
             for (int i = 0; i < templates.Length; i++)
             {
                 templateRequests[i] =
-                    new GenerationRequest.TemplateRequest(templates[i], templateEntries[i].FileNameSuffix, templateEntries[i].SubfolderName);
+                    new GenerationRequest.TemplateRequest(templates[i], templateEntries[i].FileNameSuffix,
+                        _creationFolderPath, _createSubfolders ? templateEntries[i].SubfolderPath : "", overwrite);
             }
 
             GenerationRequest request = new GenerationRequest(templateRequests, selectedTypes, _creationFolderPath,
