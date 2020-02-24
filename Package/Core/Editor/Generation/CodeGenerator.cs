@@ -27,6 +27,16 @@ public class Template
         set => _filePath = value;
     }
 
+    public string AbsoluteFilePath
+    {
+        get
+        {
+            if (File.Exists(_filePath))
+                return _filePath;
+            return Path.GetFullPath(_filePath);
+        }
+    }
+
     public bool IsEditor
     {
         get => _isEditor;
@@ -38,7 +48,7 @@ public static class TemplateExtensions
 {
     public static bool FilePathExists(this Template template)
     {
-        return File.Exists(template.FilePath);
+        return File.Exists(template.AbsoluteFilePath);
     }
 }
 
@@ -86,8 +96,7 @@ public class GenerationRequest
                 _creationFolderPath = RemoveStartingSlash(value);
             }
         }
-
-
+        
         public string SubfolderPath
         {
             get => _subfolderPath;
@@ -149,7 +158,7 @@ public class GenerationRequest
                 if (!templateRequest.Template.FilePathExists())
                 {
                     throw new NonExistingTemplateFilePathException(
-                        $"File \"{templateRequest.Template.FilePath}\" does not exist for template named \"{templateRequest.FileNameSuffix}\"",
+                        $"File \"{templateRequest.Template.AbsoluteFilePath}\" does not exist for template named \"{templateRequest.FileNameSuffix}\"",
                         templateRequest.Template);
                 }
             }
@@ -199,14 +208,17 @@ public static class CodeGenerator
 {
     public static void Generate(GenerationRequest request)
     {
+        if (request.Types.Length < 1 || request.TemplateRequests.Length < 1)
+            return;
+        var createdTypesString = "";
         foreach (var type in request.Types)
         {
-            //Debug.Log($"Creating files for type of {type.Name}");
+            Debug.Log($"Creating files for type of {type.Name}");
             foreach (var templateRequest in request.TemplateRequests)
             {
-                Debug.Log($"Creating {type.Name + templateRequest.FileNameSuffix}");
+                //Debug.Log($"Creating {type.Name + templateRequest.FileNameSuffix}");
                 var scriptContent =
-                    GetScriptContent(type, templateRequest.Template.FilePath, GetReplacementStrings(type));
+                    GetScriptContent(type, templateRequest.Template.AbsoluteFilePath, GetReplacementStrings(type));
                 var creationFilePath = GetCreationFilePath(templateRequest, type);
                 FileInfo file = new FileInfo(creationFilePath);
                 file.Directory.Create(); // If the directory already exists, this method does nothing.
@@ -215,8 +227,10 @@ public static class CodeGenerator
                 //Debug.Log($"Finished creating {type.Name + templateRequest.FileNameSuffix}");
             }
 
-            //Debug.Log($"Finished creating files for type of {type.Name}");
+            createdTypesString += type.Name + ", ";
+            Debug.Log($"Finished creating files for type of {type.Name}");
         }
+        Debug.Log($"Finished the generation process for the following types: {createdTypesString}");
         AssetDatabase.Refresh();
     }
 

@@ -105,36 +105,36 @@ namespace SOA.Generation
                 {
                     //Variables
                     new TemplateEntry("Variable", new Template(
-                        $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/VariableTemplate.template",
+                        $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/VariableTemplate.template",
                         false), true, "Variable"),
                     new TemplateEntry("VariableEditor", new Template(
-                        $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/VariableEditorTemplate.template",
+                        $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/VariableEditorTemplate.template",
                         true), true, "Variable"),
                     //References
                     new TemplateEntry("Reference", new Template(
-                            $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/ReferenceTemplate.template",
+                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/ReferenceTemplate.template",
                             false),
                         true, "References"),
                     new TemplateEntry("ReferenceDrawer", new Template(
-                            $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template",
+                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template",
                             true),
                         true, "References"),
                     //Game Events
                     new TemplateEntry("GameEvent", new Template(
-                            $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/GameEventTemplate.template",
+                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/GameEventTemplate.template",
                             false),
                         true, "Game Events"),
                     new TemplateEntry("GameEventListener", new Template(
-                            $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/GameEventListenerTemplate.template",
+                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/GameEventListenerTemplate.template",
                             false),
                         true, "Game Events"),
                     new TemplateEntry("GameEventEditor", new Template(
-                            $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/GameEventEditorTemplate.template",
+                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/GameEventEditorTemplate.template",
                             true),
                         true, "Game Events"),
                     //Unity Events
                     new TemplateEntry("UnityEvents", new Template(
-                        $"{Application.dataPath}/SOA/Package/Core/Editor/Generation/Templates/EventsTemplate.template",
+                        $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/EventsTemplate.template",
                         false), true, "Unity Events"),
                     /*
                     //Multis 
@@ -257,7 +257,8 @@ namespace SOA.Generation
             if (GUILayout.Button("Browse..."))
                 _creationFolderPath = EditorUtility.OpenFolderPanel("Select a path to save to", "", "");
             EditorGUILayout.EndHorizontal();
-            overwrite = EditorGUILayout.Toggle("Overwrite", overwrite);
+            //TODO Implement overwrite option
+            /*overwrite = EditorGUILayout.Toggle("Overwrite", overwrite);*/
             _createSubfolders = EditorGUILayout.Toggle("Create Subfolders", _createSubfolders);
         }
 
@@ -456,16 +457,13 @@ namespace SOA.Generation
             return isValid;
         }
 
-        private void Select(string type)
-        {
-            throw new NotImplementedException();
-        }
-
+        //TODO
         private void RegenerateAll()
         {
             throw new NotImplementedException();
         }
 
+        //TODO
         private void Regenerate()
         {
             throw new NotImplementedException();
