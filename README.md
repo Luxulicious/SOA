@@ -8,14 +8,13 @@ Variables:
 Reference:
 
 Generation:
-Optimize type search for generation.
 Unknown namespaces also get filled in in using (ex: "using ;" which errors)
-Exclude non-serializable classes since they cant be generated properly
-Generation is rushed and could be improved a lot in general...
-Have generation over writing be selective per file...
-Generation uses old UnitySO name
+Have generation overwriting be selective per file...
 Generation does not include new constructors in references
-Exclude monobehaviours from generation
+UI for generation crashes sometimes when removing/adding templates
+UI throws unwarranted errors sometimes when searching/adding types
+Automate editor check
+Have dependency check build into templates
 
 Lists:
 Add reference to listvariables so they can be used from a monobehaviour
