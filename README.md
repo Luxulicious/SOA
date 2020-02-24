@@ -33,13 +33,15 @@ Simply modify your `manifest.json` file found at `/PROJECTNAME/Packages/manifest
 
 ## Credits
 ### Contributors
-Made by https://github.com/Luxulicious/
+Made by <a href="https://github.com/Luxulicious/">https://github.com/Luxulicious/</a>
 ### Inspired by
-This package is inspired by Ryan Hipple's Talk at Unite Austin 2017
+This package is inspired by  <a href="https://www.youtube.com/watch?v=raQ3iHhE_Kk">Ryan Hipple's Talk at Unite Austin 2017</a>
 And has taken ideas and concepts from:
-https://github.com/sigtrapgames/SmartData
-https://github.com/AdamRamberg/unity-atoms
-https://github.com/DanielEverland/ScriptableObject-Architecture
+- <a href="https://github.com/sigtrapgames/SmartData">https://github.com/sigtrapgames/SmartData</a>
+- <a href="https://github.com/AdamRamberg/unity-atoms">https://github.com/AdamRamberg/unity-atoms</a>
+- <a href="https://github.com/DanielEverland/ScriptableObject-Architecture">https://github.com/DanielEverland/ScriptableObject-Architecture</a>
+I highly recommend giving these all a try, these are all better in some ways (and *worse* in some ways for my particular workflow, hence I made this package in the first place)
+
 ## Missing Features & Known Bugs
 Known bugs and todo's:
 Variables:
