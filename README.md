@@ -44,33 +44,29 @@ I highly recommend giving these all a try, these are all better in some ways (an
 
 ## Missing Features & Known Bugs
 Known bugs and todo's:
-Variables:
-
-Reference:
+- Making things more pretty
 
 Generation:
-Unknown namespaces also get filled in in using (ex: "using ;" which errors)
-Have generation overwriting be selective per file...
-Generation does not include new constructors in references
-UI for generation crashes sometimes when removing/adding templates
-UI throws unwarranted errors sometimes when searching/adding types
-Automate editor check
-Have dependency check build into templates
+- Unknown namespaces also get filled in in using (ex: "using ;" which errors)
+- Have generation overwriting be selective per file...
+- Generation does not include new constructors in references
+- UI for generation crashes sometimes when removing/adding templates
+- UI throws unwarranted errors sometimes when searching/adding types
+- Automate editor check
+- Have dependency check build into templates
 
 Attributes:
-Add attributes to lock designers out of readonly reference etc. For example:
+- Add attributes to lock designers out of readonly reference etc. For example:
 ["LockPersistence"], [LockScope], [HideOnChange] etc...
 
 Lists:
-Add reference to listvariables so they can be used from a monobehaviour
+- Add reference to listvariables so they can be used from a monobehaviour
 
 Events:
-Add a standard component for event listeners
-Display events in a graph
-Provide stack trace for events
-Provide an easy navigatable way through events
-
-Packaging:
+- Add a standard component for event listeners
+- Display events in a graph
+- Provide stack trace for events
+- Provide an easy navigatable way through events
 
 Additional features:
 Stacktracing event and variable change invocation
