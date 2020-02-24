@@ -9,7 +9,7 @@ Reference:
 
 Generation:
 Unknown namespaces also get filled in in using (ex: "using ;" which errors)
-Have generation overwriting be selective per file...
+Have generation overwriting be selective per file now it just auto-overwrites...
 Generation does not include new constructors in references
 UI for generation crashes sometimes when removing/adding templates
 UI throws unwarranted errors sometimes when searching/adding types
