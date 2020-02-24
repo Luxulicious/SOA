@@ -105,36 +105,36 @@ namespace SOA.Generation
                 {
                     //Variables
                     new TemplateEntry("Variable", new Template(
-                        $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/VariableTemplate.template",
+                        $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/VariableTemplate.template",
                         false), true, "Variable"),
                     new TemplateEntry("VariableEditor", new Template(
-                        $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/VariableEditorTemplate.template",
+                        $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/VariableEditorTemplate.template",
                         true), true, "Variable"),
                     //References
                     new TemplateEntry("Reference", new Template(
-                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/ReferenceTemplate.template",
+                            $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/ReferenceTemplate.template",
                             false),
                         true, "References"),
                     new TemplateEntry("ReferenceDrawer", new Template(
-                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template",
+                            $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/ReferenceDrawerTemplate.template",
                             true),
                         true, "References"),
                     //Game Events
                     new TemplateEntry("GameEvent", new Template(
-                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/GameEventTemplate.template",
+                            $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/GameEventTemplate.template",
                             false),
                         true, "Game Events"),
                     new TemplateEntry("GameEventListener", new Template(
-                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/GameEventListenerTemplate.template",
+                            $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/GameEventListenerTemplate.template",
                             false),
                         true, "Game Events"),
                     new TemplateEntry("GameEventEditor", new Template(
-                            $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/GameEventEditorTemplate.template",
+                            $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/GameEventEditorTemplate.template",
                             true),
                         true, "Game Events"),
                     //Unity Events
                     new TemplateEntry("UnityEvents", new Template(
-                        $"Package/com.theluxgames.soa/Core/Editor/Generation/Templates/EventsTemplate.template",
+                        $"Package/com.theluxgames.soa-library/Core/Editor/Generation/Templates/EventsTemplate.template",
                         false), true, "Unity Events"),
                     /*
                     //Multis 
