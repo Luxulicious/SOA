@@ -1,5 +1,5 @@
 # Scriptable Object Architecture 
-# WARNING WIP DO NOT USE IN PERSONAL PROJECTS UNLESS YOU HAVE A BACK-UP, USE AT YOUR OWN RISK, STILL VERY MUCH IN ALPHA STAGES
+<p color="red">WARNING WIP DO NOT USE IN PERSONAL PROJECTS UNLESS YOU HAVE A BACK-UP, USE AT YOUR OWN RISK, STILL VERY MUCH IN ALPHA STAGES<p/>
 
 ## What is SOA (Scriptable Object Architecture)?
 A package for creating an scriptable object based game architecture.
