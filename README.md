@@ -1,5 +1,6 @@
 # Scriptable Object Architecture 
-# WARNING WIP DO NOT USE IN PERSONAL PROJECTS UNLESS YOU HAVE A BACK-UP, USE AT YOUR OWN RISK, STILL VERY MUCH IN ALPHA STAGES
+<b>WARNING THIS IS A WIP <br/>
+DO NOT USE IN PERSONAL PROJECTS UNLESS YOU HAVE A BACK-UP AND YOU KNOW WHAT YOU ARE DOING<b/>
 
 ## What is SOA (Scriptable Object Architecture)?
 A package for creating an scriptable object based game architecture.
@@ -7,7 +8,7 @@ This package is inspired by <a href="https://www.youtube.com/watch?v=raQ3iHhE_Kk
 
 ## Features
 - Variables as scriptable objects
-- References that can be used within scripts to reference either a variable locallly or constant
+- References that can be used within scripts to reference either a variable locally or constant
 - Game Events as scriptable objects which function similar to unity events
 - Game Event Listeners for listening to game events from within scripts
 - Tool for generating variables, references, game events and listeners
@@ -40,7 +41,7 @@ And has taken ideas and concepts from:
 - <a href="https://github.com/sigtrapgames/SmartData">https://github.com/sigtrapgames/SmartData</a>
 - <a href="https://github.com/AdamRamberg/unity-atoms">https://github.com/AdamRamberg/unity-atoms</a>
 - <a href="https://github.com/DanielEverland/ScriptableObject-Architecture">https://github.com/DanielEverland/ScriptableObject-Architecture</a>
-I highly recommend giving these all a try, these are all better in some ways (and *worse* in some ways for my particular workflow, hence I made this package in the first place)
+I highly recommend giving these all a try, these are all better in some ways (and *worse* in some ways incase of my particular workflow, hence I made this package in the first place)
 
 ## Missing Features & Known Bugs
 Known bugs and todo's:
