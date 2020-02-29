@@ -497,7 +497,18 @@ namespace SOA.Generation
 
         private Dictionary<string, Type> GetAvailableTypes()
         {
-            var currentDomainsAssemblies = AppDomain.CurrentDomain.GetAssemblies();
+            var currentDomainsAssemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x =>
+            {
+                try
+                {
+                    return x.Location != null;
+                }
+                catch (NotSupportedException e)
+                {
+                    Debug.LogWarning($"Failed to get assembly for {x.FullName}. Error message: {e.Message}");
+                    return false;
+                }
+            });
             var currentDomainsTypes = new Dictionary<string, Type>();
             foreach (var assembly in currentDomainsAssemblies)
             {
