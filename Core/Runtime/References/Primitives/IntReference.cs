@@ -6,6 +6,10 @@ namespace SOA.Common.Primitives
     [Serializable]
     public class IntReference : Reference<IntVariable, int, IntUnityEvent, IntIntUnityEvent>
     {
+        public IntReference()
+        {
+        }
+
         public IntReference(int value) : base(value)
         {
         }
