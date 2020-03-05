@@ -17,7 +17,7 @@ namespace SOA.Base
         [Tooltip("Invokes an event with the previous value and the current value as arguments")] [SerializeField]
         protected EE _onChangeWithHistoryEvent = new EE();
 
-        public T DefaultValue
+        public virtual T DefaultValue
         {
             get => _defaultValue;
 #if UNITY_EDITOR
@@ -31,8 +31,7 @@ namespace SOA.Base
 #endif
         }
 
-
-        public T Value
+        public virtual T Value
         {
             get => _runtimeValue;
             set
@@ -65,14 +64,14 @@ namespace SOA.Base
             }
         }
 
-        public Persistence Persistence
+        public virtual Persistence Persistence
         {
             get => _persistence;
 #if UNITY_EDITOR
             set
             {
                 if (!Application.isPlaying) _persistence = value;
-                else Debug.LogError($"Persitence settings of {this.name} cannot be changed during playmode", this);
+                else Debug.LogError($"Persistence settings of {this.name} cannot be changed during playmode", this);
             }
 #endif
         }
@@ -82,13 +81,13 @@ namespace SOA.Base
             _runtimeValue = _defaultValue;
         }
 
-        public void AddAutoListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
+        public virtual void AddAutoListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
             _onChangeEvent.AddListener(onChangeListener);
             _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);
         }
 
-        public void RemoveAutoSubscriber(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
+        public virtual void RemoveAutoSubscriber(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
             _onChangeEvent.AddListener(onChangeListener);
             _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);

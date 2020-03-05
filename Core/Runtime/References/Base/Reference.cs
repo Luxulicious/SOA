@@ -36,8 +36,6 @@ namespace SOA.Base
         Global
     }
 
-
-
     public abstract class Reference
     {
         [SerializeField] protected Scope _scope = Scope.Global;
@@ -80,12 +78,12 @@ namespace SOA.Base
             _scope = Scope.Local;
         }
 
-        private void InvokeOnChangeResponses(T currentValue)
+        protected virtual void InvokeOnChangeResponses(T currentValue)
         {
             _onValueChangedEvent?.Invoke(currentValue);
         }
 
-        private void InvokeOnValueChangeWithHistoryResponses(T currentValue, T previousValue)
+        protected virtual void InvokeOnValueChangeWithHistoryResponses(T currentValue, T previousValue)
         {
             _onValueChangedWithHistoryEvent?.Invoke(currentValue, previousValue);
         }
@@ -102,7 +100,7 @@ namespace SOA.Base
             set { _localValue = value; }
         }
 
-        public T Value
+        public virtual T Value
         {
             get
             {
@@ -155,16 +153,7 @@ namespace SOA.Base
         {
             return ((T) obj).Equals(Value);
         }
-
-        public void AddPersistentListener(UnityAction<T> action)
-        {
-            UnityEventTools.AddPersistentListener(_onValueChangedEvent, action);
-        }
-
-        public void RemovePersistentListener(UnityAction<T> action) { 
-            UnityEventTools.RemovePersistentListener(_onValueChangedEvent, action);
-        }
-
+        
         public void AddListener(UnityAction<T> action)
         {
             _onValueChangedEvent.AddListener(action);
@@ -173,16 +162,6 @@ namespace SOA.Base
         public void RemoveListener(UnityAction<T> action)
         {
             _onValueChangedEvent.RemoveListener(action);
-        }
-
-        public void AddPersistentListener(UnityAction<T,T> action)
-        {
-            UnityEventTools.AddPersistentListener(_onValueChangedWithHistoryEvent, action);
-        }
-
-        public void RemovePersistentListener(UnityAction<T, T> action)
-        {
-            UnityEventTools.RemovePersistentListener(_onValueChangedWithHistoryEvent, action);
         }
 
         public void AddListener(UnityAction<T, T>  action)
