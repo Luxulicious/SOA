@@ -11,8 +11,8 @@ namespace SOA.Base
         where E : UnityEvent<T>, new()
         where EE : UnityEvent<T, T>, new()
     {
-        private static readonly float _breakLine = 2f;
-        private static readonly float _marginRight = 2f;
+        protected static readonly float _breakLine = 2f;
+        protected static readonly float _marginRight = 2f;
 
         //TODO Dynamically determine these string via member information of the class
         private static readonly string _persistencePropertyPath = "_persistence";
@@ -119,16 +119,6 @@ namespace SOA.Base
                 switch (persistence)
                 {
                     case Persistence.Constant:
-                        /*
-                        if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
-                            if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Variable)
-                            {
-                                EditorGUI.DrawRect(valueRect, _wrongFieldColor);
-                                Debug.LogWarning(
-                                    $"{globalValueProperty.objectReferenceValue.name} is referencing a variable. Set reference type to variable or change {globalValueProperty.objectReferenceValue.name} to be used as a constant.",
-                                    property.serializedObject.targetObject);
-                            }
-                        */
                         break;
                     case Persistence.Variable:
                         DrawOnChangeEvents(contentRect, valueRect, isPartOfArray, property);
@@ -158,23 +148,24 @@ namespace SOA.Base
                 {
                     case Scope.Local:
                         var localValueProperty = property.FindPropertyRelative(_localValuePropertyPath);
-                        EditorGUI.PropertyField(contentRect, localValueProperty, GUIContent.none);
+                        EditorGUI.PropertyField(new Rect(contentRect.x, contentRect.y, contentRect.width, EditorGUI.GetPropertyHeight(localValueProperty)), localValueProperty, GUIContent.none);
                         break;
                     case Scope.Global:
                         var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
-                        EditorGUI.PropertyField(contentRect, globalValueProperty, GUIContent.none);
+                        EditorGUI.PropertyField(new Rect(contentRect.x, contentRect.y, contentRect.width, EditorGUI.GetPropertyHeight(globalValueProperty)), globalValueProperty, GUIContent.none);
                         break;
                     default:
                         throw new ArgumentOutOfRangeException();
                 }
             }
 
+            PostOnInspectorGUI(position, property, label);
+
             EditorGUI.indentLevel = originalIndentLevel;
             EditorGUI.EndProperty();
         }
 
-
-        private static Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect, Rect contentRect)
+        private Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect, Rect contentRect)
         {
             var valuePropertyHeight = EditorGUI.GetPropertyHeight(valueProperty);
             var valueRect = new Rect
@@ -289,5 +280,15 @@ namespace SOA.Base
                 return valueHeight;
             }
         }
+        
+        //TODO Abstract into interface
+        /// <summary>
+        /// Override this to run code pre-OnInspectorGUI()
+        /// </summary>
+        protected virtual void PostOnInspectorGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            return;
+        }
     }
+
 }

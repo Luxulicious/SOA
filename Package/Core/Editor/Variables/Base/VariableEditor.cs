@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Xml.Schema;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -15,36 +16,21 @@ namespace SOA.Base
         where EE : UnityEvent<T, T>, new()
     {
         //TODO Dynamically determine these string via member information of the class
-        private static readonly string _persistencePropertyPath = "_persistence";
-        private static readonly string _defaultValuePropertyPath = "_defaultValue";
-        private static readonly string _runtimeValuePropertyPath = "_runtimeValue";
+        protected static readonly string _persistencePropertyPath = "_persistence";
+        protected static readonly string _defaultValuePropertyPath = "_defaultValue";
+        protected static readonly string _runtimeValuePropertyPath = "_runtimeValue";
 
-        public static string PersistencePropertyPath => _persistencePropertyPath;
+        ////True if serializedObject  was already updating pre-OnInspectorGUI()
+        //private bool _preUpdate = false;
 
-        public static Type FindType(string qualifiedTypeName)
-        {
-            Type t = Type.GetType(qualifiedTypeName);
-
-            if (t != null)
-            {
-                return t;
-            }
-            else
-            {
-                foreach (Assembly asm in AppDomain.CurrentDomain.GetAssemblies())
-                {
-                    t = asm.GetType(qualifiedTypeName);
-                    if (t != null)
-                        return t;
-                }
-
-                return null;
-            }
-        }
+        ////True if serializedObject needs updating post-OnInspectorGUI()
+        //private bool _postUpdate = false;
 
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
+
+            PreOnInspectorGUI();
 
             var defaultValueProperty = serializedObject.FindProperty(_defaultValuePropertyPath);
             var runtimeValueProperty = serializedObject.FindProperty(_runtimeValuePropertyPath);
@@ -52,8 +38,8 @@ namespace SOA.Base
 
             var isPlaying = Application.isPlaying;
 
-            if (!isPlaying)
-                EditorGUILayout.PropertyField(useAsConstantProperty, true);
+            if (!Application.isPlaying)
+                DrawPersistencePropertyField(useAsConstantProperty);
 
             if (useAsConstantProperty.boolValue)
             {
@@ -93,17 +79,16 @@ namespace SOA.Base
                         {
                             runtimeValueProperty.SetValue(null);
                         }
-
                     }
                     else
                     {
-                        if(runtimeValueProperty.GetValue() != null)
+                        if (runtimeValueProperty.GetValue() != null)
                             runtimeValueProperty.SetValue(null);
                         EditorGUI.BeginDisabledGroup(true);
-                        EditorGUILayout.PropertyField(runtimeValueProperty, true);
+                        DrawRuntimeValuePropertyField(runtimeValueProperty);
                         EditorGUI.EndDisabledGroup();
-                        
                     }
+
                     EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.LabelField(
                         $"({typeof(T).Name} Variables can only be assigned to at runtime without inspector)");
@@ -115,7 +100,7 @@ namespace SOA.Base
                     EditorGUILayout.PropertyField(defaultValueProperty, true);
                     EditorGUI.EndDisabledGroup();
                     EditorGUI.BeginDisabledGroup(!isPlaying);
-                    EditorGUILayout.PropertyField(runtimeValueProperty, true);
+                    DrawRuntimeValuePropertyField(runtimeValueProperty);
                     EditorGUI.EndDisabledGroup();
                 }
 
@@ -129,7 +114,37 @@ namespace SOA.Base
                 EditorGUI.EndDisabledGroup();
             }
 
+            PostOnInspectorGUI();
+
             serializedObject.ApplyModifiedProperties();
+        }
+
+        protected virtual void DrawRuntimeValuePropertyField(SerializedProperty runtimeValueProperty)
+        {
+            EditorGUILayout.PropertyField(runtimeValueProperty, true);
+        }
+
+        //TODO Abstract into interface
+        /// <summary>
+        /// Override this to run code pre-OnInspectorGUI()
+        /// </summary>
+        protected virtual void PreOnInspectorGUI()
+        {
+            return;
+        }
+
+        //TODO Abstract into interface
+        /// <summary>
+        /// Override this to run code post-OnInspectorGUI()
+        /// </summary>
+        protected virtual void PostOnInspectorGUI()
+        {
+            return;
+        }
+
+        protected virtual void DrawPersistencePropertyField(SerializedProperty useAsConstantProperty)
+        {
+            EditorGUILayout.PropertyField(useAsConstantProperty, true);
         }
     }
 }
