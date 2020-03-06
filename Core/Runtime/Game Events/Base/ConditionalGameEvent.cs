@@ -29,9 +29,9 @@ namespace SOA.Base
                 case ComparisonOperator.Equals:
                     return comparison == 0;
                 case ComparisonOperator.LessThan:
-                    return comparison > 0;
-                case ComparisonOperator.GreaterThan:
                     return comparison < 0;
+                case ComparisonOperator.GreaterThan:
+                    return comparison > 0;
                 case ComparisonOperator.Unequal:
                     return comparison != 0;
                 default:

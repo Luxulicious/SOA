@@ -1,11 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Reflection;
-using System.Text.RegularExpressions;
-using System.Xml.Schema;
-using JetBrains.Annotations;
-using UnityEditor;
-using UnityEditor.SceneManagement;
+﻿using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
