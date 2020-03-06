@@ -78,6 +78,11 @@ namespace SOA.Base
 
         private void OnEnable()
         {
+            Revert();
+        }
+
+        public virtual void Revert()
+        {
             _runtimeValue = _defaultValue;
         }
 
