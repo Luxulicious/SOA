@@ -67,13 +67,12 @@ namespace SOA.Base
         public virtual Persistence Persistence
         {
             get => _persistence;
-#if UNITY_EDITOR
+
             set
             {
                 if (!Application.isPlaying) _persistence = value;
                 else Debug.LogError($"Persistence settings of {this.name} cannot be changed during playmode", this);
             }
-#endif
         }
 
         private void OnEnable()
