@@ -1,4 +1,5 @@
-﻿using SOA.Base;
+﻿using System.Collections.Generic;
+using SOA.Base;
 using UnityEngine;
 
 namespace SOA.Common.Primitives
@@ -7,9 +8,10 @@ namespace SOA.Common.Primitives
     public class BoolReferenceComponent : ReferenceComponent<BoolReference, BoolVariable, bool, BoolUnityEvent,
         BoolBoolUnityEvent>, ISerializationCallbackReceiver
     {
-        //TODO This type of bool referencing should be done ideally from bool reference itself and not its component
+        
         [SerializeField] private BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
         [SerializeField] private BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
+        
 
         public void OnAfterDeserialize()
         {
