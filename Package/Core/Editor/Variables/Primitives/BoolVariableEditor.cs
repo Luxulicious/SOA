@@ -3,9 +3,9 @@ using UnityEditor;
 
 namespace SOA.Common.Primitives
 {
-    [CustomEditor(typeof(BoolVariable))]
+    //[CustomEditor(typeof(BoolVariable))]
     public class BoolVariableEditor : VariableEditor<BoolVariable, bool, BoolUnityEvent, BoolBoolUnityEvent>
     {
-
+       
     }
 }
