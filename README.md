@@ -47,6 +47,12 @@ I highly recommend giving these all a try, these are all better in some ways (an
 Known bugs and todo's:
 - Making things more pretty
 
+References:
+- Make references be able to reference another reference
+- Collapsing sometimes makes a label appear twice
+- References in array can collapse back-in, but can collapse out
+- References that are marked as dirty by unity will show 2 labels instead of 1
+
 Generation:
 - Unknown namespaces also get filled in in using (ex: "using ;" which errors)
 - Have generation overwriting be selective per file...
@@ -69,7 +75,15 @@ Events:
 - Provide stack trace for events
 - Provide an easy navigatable way through events
 
+Composite Variables:
+- Make member values be variable only
+- Make member values be non-collapsable
+- Make member value only show reference propertyfield and nothing else
+- Make member not be self to avoid infinite recursion
+- Abstract it beyond boolean
+
 Additional features:
 Stacktracing event and variable change invocation
 Finding all references shortcut for game events and variables
 Decorators for modular scriptable object logic
+Add developer descriptions
