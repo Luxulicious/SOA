@@ -7,8 +7,13 @@ namespace SOA.Common.Primitives
     [Serializable]
     public class BoolReference : Reference<BoolVariable, bool, BoolUnityEvent, BoolBoolUnityEvent>
     {
-        [SerializeField]
+        [SerializeField, Tooltip("Inverts the result when trying to GET the value " +
+                                 "\nand the value(s) received from On Change Events." +
+                                 "\nNOTE: SETting the value is completely unaffected."
+         )]
+        //TODO Make this collapsible
         private bool _invertResult = false;
+
         public override bool Value
         {
             get => _invertResult ? !base.Value : base.Value;
@@ -17,8 +22,8 @@ namespace SOA.Common.Primitives
 
         protected override void InvokeOnChangeResponses(bool currentValue)
         {
-            if(!_invertResult)
-             base.InvokeOnChangeResponses(currentValue);
+            if (!_invertResult)
+                base.InvokeOnChangeResponses(currentValue);
             else
                 base.InvokeOnChangeResponses(!currentValue);
         }
