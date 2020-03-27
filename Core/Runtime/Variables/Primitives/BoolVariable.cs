@@ -162,7 +162,15 @@ namespace SOA.Common.Primitives
         public void OnAfterDeserialize()
         {
             if (!_composite) return;
-            UpdateComposite();
+            try
+            {
+                UpdateComposite();
+            }
+            catch (CompositeException e)
+            {
+                Debug.LogWarning(e.Message);
+            }
+
             SetAllReferencesToGlobalScope();
         }
 
