@@ -17,15 +17,17 @@ namespace SOA.Base
         //TODO Dynamically determine these string via member information of the class
 
         #region Property Paths
-        private static readonly string _persistencePropertyPath = "_persistence";
-        private static readonly string _scopePropertyPath = "_scope";
-        private static readonly string _localValuePropertyPath = "_localValue";
-        private static readonly string _globalValuePropertyPath = "_globalValue";
-        private static readonly string _prevGlobalValuePropertyPath = "_prevGlobalValue";
-        private static readonly string _foldoutPropertyPath = "_foldout";
-        private static readonly string _onValueChangedPropertyPath = "_onValueChangedEvent";
-        private static readonly string _onValueChangedWithHistoryPropertyPath = "_onValueChangedWithHistoryEvent";
-        private static readonly string _foldoutEventsPropertyPath = "_foldoutEvents";
+
+        protected static readonly string _persistencePropertyPath = "_persistence";
+        protected static readonly string _scopePropertyPath = "_scope";
+        protected static readonly string _localValuePropertyPath = "_localValue";
+        protected static readonly string _globalValuePropertyPath = "_globalValue";
+        protected static readonly string _prevGlobalValuePropertyPath = "_prevGlobalValue";
+        protected static readonly string _mainFoldOutPropertyPath = "_foldout";
+        protected static readonly string _onValueChangedPropertyPath = "_onValueChangedEvent";
+        protected static readonly string _onValueChangedWithHistoryPropertyPath = "_onValueChangedWithHistoryEvent";
+        protected static readonly string _foldoutEventsPropertyPath = "_foldoutEvents";
+
         #endregion
 
         private static readonly string _onChangeEventsFoldoutHeader = "On Change Events";
@@ -33,7 +35,7 @@ namespace SOA.Base
         //TODO Move this to a utility inspector/UI class
         private static Color _wrongFieldColor = new Color(1, 0.75f, 0, .25f);
 
-        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        /*public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
         {
             //Begin Label
             label = EditorGUI.BeginProperty(position, label, property);
@@ -98,8 +100,8 @@ namespace SOA.Base
                 EditorGUI.PropertyField(secondHalfSplitUsageRect, persistenceProperty, GUIContent.none, true);
 
                 //Get values from usage properties
-                var scope = (Scope) scopeProperty.enumValueIndex;
-                var persistence = (Persistence) persistenceProperty.enumValueIndex;
+                var scope = (Scope)scopeProperty.enumValueIndex;
+                var persistence = (Persistence)persistenceProperty.enumValueIndex;
 
                 #endregion
 
@@ -127,7 +129,7 @@ namespace SOA.Base
                         DrawOnChangeEvents(contentRect, valueRect, isPartOfArray, property);
                         //Throw warning if reference is referencing a constant while referring to it as a variable
                         if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
-                            if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
+                            if (((V)globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
                             {
                                 EditorGUI.DrawRect(valueRect, _wrongFieldColor);
                                 Debug.LogWarning(
@@ -166,68 +168,265 @@ namespace SOA.Base
 
             EditorGUI.indentLevel = originalIndentLevel;
             EditorGUI.EndProperty();
+        }*/
+
+        public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
+        {
+            //Begin Label
+            label = EditorGUI.BeginProperty(position, label, property);
+
+            //Check if property is part of array
+            var isPartOfArray = property.IsPartOfArray();
+
+            var originalIndentLevel = EditorGUI.indentLevel;
+
+            var mainFoldOutRect = new Rect(position.x, position.y, 5, position.height);
+            property.FindPropertyRelative(_mainFoldOutPropertyPath).boolValue =
+                EditorGUI.Foldout(
+                    mainFoldOutRect,
+                    property.FindPropertyRelative(_mainFoldOutPropertyPath).boolValue,
+                    !property.FindPropertyRelative(_mainFoldOutPropertyPath).boolValue ? property.displayName : ""
+                );
+
+            var mainFoldOutValue = property.FindPropertyRelative(_mainFoldOutPropertyPath).boolValue;
+
+            if (mainFoldOutValue)
+            {
+                DrawFoldedOutReference(position, property, label);
+            }
+            else
+            {
+                DrawUnFoldedOutReference(position, property, label);
+            }
+
+            PostOnInspectorGUI(position, property, label);
+
+            EditorGUI.indentLevel = originalIndentLevel;
+            EditorGUI.EndProperty();
         }
 
-        private Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect, Rect contentRect)
+        protected virtual void DrawUnFoldedOutReference(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var labelRect = EditorGUI.PrefixLabel(position, label);
+            var contentRect = EditorGUI.PrefixLabel(position, label);
+
+            var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
+            var scope = (Scope) scopeProperty.enumValueIndex;
+            switch (scope)
+            {
+                case Scope.Local:
+                    var localValueProperty = property.FindPropertyRelative(_localValuePropertyPath);
+                    EditorGUI.PropertyField(
+                        new Rect(contentRect.x, contentRect.y, contentRect.width,
+                            EditorGUI.GetPropertyHeight(localValueProperty)), localValueProperty, GUIContent.none);
+                    break;
+                case Scope.Global:
+                    var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
+                    EditorGUI.PropertyField(
+                        new Rect(contentRect.x, contentRect.y, contentRect.width,
+                            EditorGUI.GetPropertyHeight(globalValueProperty)), globalValueProperty,
+                        GUIContent.none);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+        }
+
+        protected virtual void DrawFoldedOutReference(Rect position, SerializedProperty property, GUIContent label)
+        {
+            var isPartOfArray = property.IsPartOfArray();
+
+            var contentRect = EditorGUI.PrefixLabel(position, label);
+
+            if (isPartOfArray)
+                EditorGUI.indentLevel -= 1;
+
+            var usageRect = DrawUsageField(property, contentRect);
+
+            var valueRect = DrawValueFields(property, usageRect);
+
+            //Get properties usage properties
+            var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
+            var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
+            //Get values from usage properties
+            var scope = (Scope) scopeProperty.enumValueIndex;
+            var persistence = (Persistence) persistenceProperty.enumValueIndex;
+            var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
+
+            #region Checking for faulty Persistence 
+
+            switch (persistence)
+            {
+                case Persistence.Constant:
+                    break;
+                case Persistence.Variable:
+                    DrawOnValueChangedEventsFoldout(valueRect, property);
+                    //Throw warning if reference is referencing a constant while referring to it as a variable
+                    if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
+                        if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
+                        {
+                            EditorGUI.DrawRect(valueRect, _wrongFieldColor);
+                            Debug.LogWarning(
+                                $"{globalValueProperty.objectReferenceValue.name} is referencing a constant. Set reference type to constant or change {globalValueProperty.objectReferenceValue.name} to be used as a variable.",
+                                property.serializedObject.targetObject);
+                        }
+
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            #endregion
+        }
+
+        protected virtual Rect DrawValueFields(SerializedProperty property, Rect usageRect)
+        {
+            //Get properties usage properties
+            var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
+            var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
+            //Get values from usage properties
+            var scope = (Scope) scopeProperty.enumValueIndex;
+            var persistence = (Persistence) persistenceProperty.enumValueIndex;
+            var valueRect = new Rect();
+            //Draw value fields
+            switch (scope)
+            {
+                case Scope.Local:
+                    valueRect = DrawLocalValueField(property, usageRect);
+                    break;
+                case Scope.Global:
+                    valueRect = DrawGlobalValueField(property, usageRect);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+
+            return valueRect;
+        }
+
+        protected virtual Rect DrawGlobalValueField(SerializedProperty property, Rect usageRect)
+        {
+            var globalValueProperty = property.FindPropertyRelative(_globalValuePropertyPath);
+            var valueRect = DrawValuePropertyField(globalValueProperty, usageRect);
+            return valueRect;
+        }
+
+        protected virtual Rect DrawLocalValueField(SerializedProperty property, Rect usageRect)
+        {
+            var localValueProperty = property.FindPropertyRelative(_localValuePropertyPath);
+            var valueRect = DrawValuePropertyField(localValueProperty, usageRect);
+            return valueRect;
+        }
+
+        protected virtual Rect DrawUsageField(SerializedProperty property, Rect contentRect)
+        {
+            //Get properties for usage section
+            var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
+            var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
+            var scopePropertyHeight = EditorGUI.GetPropertyHeight(scopeProperty);
+            var persistencePropertyHeight = EditorGUI.GetPropertyHeight(persistenceProperty);
+
+            //Get rects for usage sections
+            var usageRectHeight = scopePropertyHeight > persistencePropertyHeight
+                ? scopePropertyHeight
+                : persistencePropertyHeight;
+            var usageRect = new Rect
+            (
+                contentRect.position.x,
+                contentRect.position.y + _breakLine,
+                contentRect.width,
+                usageRectHeight
+            );
+            var halfSplitUsageRectWidth = (usageRect.width - _marginRight) / 2;
+            var firstHalfSplitUsageRect = new Rect
+            (
+                usageRect.position.x,
+                usageRect.position.y,
+                halfSplitUsageRectWidth,
+                usageRect.height
+            );
+            var secondHalfSplitUsageRect = new Rect
+            (
+                usageRect.position.x + halfSplitUsageRectWidth + _marginRight,
+                usageRect.y,
+                halfSplitUsageRectWidth,
+                usageRect.height
+            );
+
+            //Draw usage section
+            EditorGUI.PropertyField(firstHalfSplitUsageRect, scopeProperty, GUIContent.none, true);
+            EditorGUI.PropertyField(secondHalfSplitUsageRect, persistenceProperty, GUIContent.none, true);
+
+            return usageRect;
+        }
+
+        protected virtual Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect)
         {
             var valuePropertyHeight = EditorGUI.GetPropertyHeight(valueProperty);
             var valueRect = new Rect
             (
                 usageRect.position.x,
                 usageRect.position.y + usageRect.height + _breakLine,
-                contentRect.width,
+                usageRect.width,
                 valuePropertyHeight
             );
             EditorGUI.PropertyField(valueRect, valueProperty, GUIContent.none, true);
             return valueRect;
         }
 
-        private void DrawOnChangeEvents(Rect contentRect, Rect valueRect, bool isPartOfArray,
+        protected virtual Rect DrawOnValueChangedEventsFoldout(Rect valueRect,
             SerializedProperty property)
         {
+            var eventsFoldOutRect = new Rect(
+                valueRect.position.x,
+                valueRect.position.y + valueRect.height,
+                valueRect.width,
+                EditorGUIUtility.singleLineHeight);
+            //eventsFoldOutRect = EditorGUI.IndentedRect(eventsFoldOutRect);
+            EditorGUI.indentLevel += 1;
+            property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue = EditorGUI.Foldout(
+                eventsFoldOutRect, property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue,
+                _onChangeEventsFoldoutHeader);
+
+            if (property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue)
             {
-                var eventsFoldOutRect = new Rect(
-                    contentRect.position.x,
-                    valueRect.position.y + valueRect.height,
-                    contentRect.width,
-                    EditorGUIUtility.singleLineHeight);
-                eventsFoldOutRect = EditorGUI.IndentedRect(eventsFoldOutRect);
-                EditorGUI.indentLevel += 1;
-                property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue = EditorGUI.Foldout(
-                    eventsFoldOutRect, property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue,
-                    _onChangeEventsFoldoutHeader);
-
-                if (property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue)
-                {
-                    if (!isPartOfArray)
-                        EditorGUI.indentLevel += 1;
-                    var onValueChangedProp = property.FindPropertyRelative(_onValueChangedPropertyPath);
-                    var onValueChangedRect = new Rect(
-                        contentRect.position.x,
-                        eventsFoldOutRect.position.y + eventsFoldOutRect.height,
-                        contentRect.width,
-                        EditorGUI.GetPropertyHeight(onValueChangedProp) + _breakLine);
-                    onValueChangedRect = EditorGUI.IndentedRect(onValueChangedRect);
-                    //EditorGUI.DrawRect(onValueChangedRect, Color.cyan);
-                    EditorGUI.PropertyField(onValueChangedRect, onValueChangedProp,
-                        new GUIContent(onValueChangedProp.displayName), true);
-
-                    var onValueChangedWithHistoryProp =
-                        property.FindPropertyRelative(_onValueChangedWithHistoryPropertyPath);
-                    var onValueChangedWithHistoryRect = new Rect(
-                        contentRect.position.x,
-                        onValueChangedRect.position.y + onValueChangedRect.height,
-                        contentRect.width,
-                        EditorGUI.GetPropertyHeight(onValueChangedWithHistoryProp) + _breakLine);
-                    onValueChangedWithHistoryRect = EditorGUI.IndentedRect(onValueChangedWithHistoryRect);
-                    //EditorGUI.DrawRect(onValueChangedWithHistoryRect, Color.green);
-                    EditorGUI.PropertyField(onValueChangedWithHistoryRect, onValueChangedWithHistoryProp,
-                        new GUIContent(onValueChangedWithHistoryProp.displayName), true);
-                }
+                DrawOnValueChangedEvents(property, eventsFoldOutRect);
             }
+
+            return eventsFoldOutRect;
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
+        protected virtual Rect DrawOnValueChangedEvents(SerializedProperty property, Rect eventsFoldOutRect)
+        {
+            var isPartOfArray = property.IsPartOfArray();
+            if (!isPartOfArray)
+                EditorGUI.indentLevel += 1;
+
+            var onValueChangedProperty = property.FindPropertyRelative(_onValueChangedPropertyPath);
+            var onValueChangedRect = new Rect(
+                eventsFoldOutRect.position.x,
+                eventsFoldOutRect.position.y + eventsFoldOutRect.height,
+                eventsFoldOutRect.width,
+                EditorGUI.GetPropertyHeight(onValueChangedProperty) + _breakLine);
+            onValueChangedRect = EditorGUI.IndentedRect(onValueChangedRect);
+            EditorGUI.PropertyField(onValueChangedRect, onValueChangedProperty,
+                new GUIContent(onValueChangedProperty.displayName), true);
+
+            var onValueChangedWithHistoryProperty =
+                property.FindPropertyRelative(_onValueChangedWithHistoryPropertyPath);
+            var onValueChangedWithHistoryRect = new Rect(
+                eventsFoldOutRect.position.x,
+                onValueChangedRect.position.y + onValueChangedRect.height,
+                eventsFoldOutRect.width,
+                EditorGUI.GetPropertyHeight(onValueChangedWithHistoryProperty) + _breakLine);
+            onValueChangedWithHistoryRect = EditorGUI.IndentedRect(onValueChangedWithHistoryRect);
+            EditorGUI.PropertyField(onValueChangedWithHistoryRect, onValueChangedWithHistoryProperty,
+                new GUIContent(onValueChangedWithHistoryProperty.displayName), true);
+            var latestRect = onValueChangedWithHistoryRect;
+            return latestRect;
+        }
+
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) 
         {
             var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
             var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
@@ -236,8 +435,8 @@ namespace SOA.Base
             var scope = (Scope) scopeProperty.enumValueIndex;
             var persistence = (Persistence) persistenceProperty.enumValueIndex;
             var usageHeight = (scopePropertyHeight > persistencePropertyHeight
-                ? scopePropertyHeight
-                : persistencePropertyHeight) + +_breakLine;
+                                  ? scopePropertyHeight
+                                  : persistencePropertyHeight) + +_breakLine;
             float valueHeight;
             switch (scope)
             {
@@ -253,7 +452,7 @@ namespace SOA.Base
 
             var usageAndValueHeight = usageHeight + _breakLine + valueHeight;
 
-            var isFoldedOut = property.FindPropertyRelative(_foldoutPropertyPath).boolValue;
+            var isFoldedOut = property.FindPropertyRelative(_mainFoldOutPropertyPath).boolValue;
             if (isFoldedOut)
             {
                 switch (persistence)
@@ -283,7 +482,7 @@ namespace SOA.Base
                 return valueHeight;
             }
         }
-        
+
         //TODO Abstract into interface
         /// <summary>
         /// Override this to run code pre-OnInspectorGUI()
@@ -293,5 +492,4 @@ namespace SOA.Base
             return;
         }
     }
-
 }
