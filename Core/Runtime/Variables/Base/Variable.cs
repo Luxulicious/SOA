@@ -10,6 +10,7 @@ namespace SOA.Base
         [SerializeField] protected T _defaultValue;
         [SerializeField] protected T _runtimeValue;
         [SerializeField] protected Persistence _persistence;
+        [SerializeField, HideInInspector] protected bool _foldOutOnChangeEvents = false;
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
         protected E _onChangeEvent = new E();
