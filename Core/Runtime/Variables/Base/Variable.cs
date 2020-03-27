@@ -40,18 +40,17 @@ namespace SOA.Base
                 {
                     case Persistence.Variable:
                     {
-                        var prev = _runtimeValue;
+                        var prevValue = _runtimeValue;
                         _runtimeValue = value;
-                        if (_runtimeValue != null && prev != null)
+                        if (_runtimeValue != null && prevValue != null)
                         {
-                            if (_runtimeValue.Equals(prev))
+                            if (_runtimeValue.Equals(prevValue))
                                 return;
                         }
-                        else if (_runtimeValue == null && prev == null)
+                        else if (_runtimeValue == null && prevValue == null)
                             return;
 
-                        _onChangeEvent.Invoke(_runtimeValue);
-                        _onChangeWithHistoryEvent.Invoke(_runtimeValue, prev);
+                        InvokeOnChangeEvents(prevValue, _runtimeValue);
                         break;
                     }
 
@@ -62,6 +61,12 @@ namespace SOA.Base
                         throw new ArgumentOutOfRangeException();
                 }
             }
+        }
+
+        protected virtual void InvokeOnChangeEvents(T prev, T value)
+        {
+            _onChangeEvent.Invoke(value);
+            _onChangeWithHistoryEvent.Invoke(value, prev);
         }
 
         public virtual Persistence Persistence
