@@ -15,16 +15,19 @@ namespace SOA.Base
         protected static readonly float _marginRight = 2f;
 
         //TODO Dynamically determine these string via member information of the class
+
+        #region Property Paths
         private static readonly string _persistencePropertyPath = "_persistence";
         private static readonly string _scopePropertyPath = "_scope";
         private static readonly string _localValuePropertyPath = "_localValue";
         private static readonly string _globalValuePropertyPath = "_globalValue";
         private static readonly string _prevGlobalValuePropertyPath = "_prevGlobalValue";
         private static readonly string _foldoutPropertyPath = "_foldout";
-
         private static readonly string _onValueChangedPropertyPath = "_onValueChangedEvent";
         private static readonly string _onValueChangedWithHistoryPropertyPath = "_onValueChangedWithHistoryEvent";
         private static readonly string _foldoutEventsPropertyPath = "_foldoutEvents";
+        #endregion
+
         private static readonly string _onChangeEventsFoldoutHeader = "On Change Events";
 
         //TODO Move this to a utility inspector/UI class
