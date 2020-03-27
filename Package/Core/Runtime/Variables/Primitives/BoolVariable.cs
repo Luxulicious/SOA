@@ -147,6 +147,13 @@ namespace SOA.Common.Primitives
             }
         }
 
+        protected override void InvokeOnChangeEvents(bool prevValue, bool value)
+        {
+            base.InvokeOnChangeEvents(prevValue, value);
+            if (prevValue == value) return;
+            if (value) InvokeOnChangedToTrueEvent();
+            else InvokeOnChangedToFalseEvent();
+        }
 
         public void OnBeforeSerialize()
         {
@@ -163,6 +170,16 @@ namespace SOA.Common.Primitives
         {
             if (!_memberValues.Any()) return;
             foreach (var reference in _memberValues.Where(x => x.Scope == Scope.Local)) reference.Scope = Scope.Global;
+        }
+
+        public void InvokeOnChangedToFalseEvent()
+        {
+            _onValueChangedToFalseEvent.Invoke(false);
+        }
+
+        public void InvokeOnChangedToTrueEvent()
+        {
+            _onValueChangedToTrueEvent.Invoke(true);
         }
     }
 
