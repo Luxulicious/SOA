@@ -137,7 +137,7 @@ namespace SOA.Common.Primitives
                 else
                 {
                     throw new CompositeException(
-                        $"Atleast 1 member value needs to exist when using composite");
+                        $"At least 1 member value needs to exist when using composite");
                 }
             }
             else
