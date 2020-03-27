@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using JetBrains.Annotations;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -13,12 +14,6 @@ namespace SOA.Base
         protected static readonly string _defaultValuePropertyPath = "_defaultValue";
         protected static readonly string _runtimeValuePropertyPath = "_runtimeValue";
 
-        ////True if serializedObject  was already updating pre-OnInspectorGUI()
-        //private bool _preUpdate = false;
-
-        ////True if serializedObject needs updating post-OnInspectorGUI()
-        //private bool _postUpdate = false;
-
         public override void OnInspectorGUI()
         {
             serializedObject.Update();
@@ -31,13 +26,16 @@ namespace SOA.Base
 
             var isPlaying = Application.isPlaying;
 
-            if (!Application.isPlaying)
+            if (!isPlaying)
                 DrawPersistencePropertyField(useAsConstantProperty);
 
             if (useAsConstantProperty.boolValue)
             {
-                EditorGUILayout.PropertyField(!isPlaying ? defaultValueProperty : runtimeValueProperty,
-                    new GUIContent("Constant Value"), true);
+                var constantValueLabel = "Constant Value";
+                if (!isPlaying)
+                    DrawDefaultValuePropertyField(defaultValueProperty, constantValueLabel);
+                else
+                    DrawRuntimeValuePropertyField(runtimeValueProperty, constantValueLabel);
             }
             else
             {
@@ -61,17 +59,14 @@ namespace SOA.Base
 
                         if (GUILayout.Button("Go to reference"))
                         {
-                            var instance = (runtimeValue as GameObject);
+                            var instance = runtimeValue as GameObject;
                             if (instance == null) instance = (runtimeValue as Component)?.gameObject;
                             var instanceId = instance.GetInstanceID();
                             Selection.activeInstanceID = instanceId;
                             Selection.activeGameObject = instance;
                         }
 
-                        if (GUILayout.Button("Clear reference"))
-                        {
-                            runtimeValueProperty.SetValue(null);
-                        }
+                        if (GUILayout.Button("Clear reference")) runtimeValueProperty.SetValue(null);
                     }
                     else
                     {
@@ -90,20 +85,20 @@ namespace SOA.Base
                 else
                 {
                     EditorGUI.BeginDisabledGroup(isPlaying);
-                    EditorGUILayout.PropertyField(defaultValueProperty, true);
+                    DrawDefaultValuePropertyField(defaultValueProperty);
                     EditorGUI.EndDisabledGroup();
                     EditorGUI.BeginDisabledGroup(!isPlaying);
                     DrawRuntimeValuePropertyField(runtimeValueProperty);
                     EditorGUI.EndDisabledGroup();
                 }
 
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeEvent"), true);
-                EditorGUILayout.PropertyField(serializedObject.FindProperty("_onChangeWithHistoryEvent"), true);
+                var onChangedEventProperty = serializedObject.FindProperty("_onChangeEvent");
+                var onChangedWithHistoryEventProperty = serializedObject.FindProperty("_onChangeWithHistoryEvent");
+                DrawOnChangeEventsPropertyFields(onChangedEventProperty, onChangedWithHistoryEventProperty);
 
                 EditorGUI.BeginDisabledGroup(!isPlaying);
                 var v = target as V;
-                if (GUILayout.Button("Invoke On Change Event")) v.ForceInvokeOnChangeEvent();
-                if (GUILayout.Button("Invoke On Change With History Event")) v.ForceInvokeOnChangeWithHistoryEvent();
+                DrawInvokeOnChangeEventsButtons(v);
                 EditorGUI.EndDisabledGroup();
             }
 
@@ -112,9 +107,46 @@ namespace SOA.Base
             serializedObject.ApplyModifiedProperties();
         }
 
-        protected virtual void DrawRuntimeValuePropertyField(SerializedProperty runtimeValueProperty)
+        protected virtual void DrawInvokeOnChangeEventsButtons(V variable)
         {
-            EditorGUILayout.PropertyField(runtimeValueProperty, true);
+            if (GUILayout.Button("Invoke On Change Event")) variable.ForceInvokeOnChangeEvent();
+            if (GUILayout.Button("Invoke On Change With History Event")) variable.ForceInvokeOnChangeWithHistoryEvent();
+        }
+
+        protected virtual void DrawOnChangeEventsPropertyFields(SerializedProperty onChangedEventProperty,
+            SerializedProperty onChangedWithHistoryEventProperty)
+        {
+            DrawOnChangedEventProperty(onChangedEventProperty);
+            DrawOnChangedWithHistoryEventProperty(onChangedWithHistoryEventProperty);
+        }
+
+        protected virtual void DrawOnChangedWithHistoryEventProperty(
+            SerializedProperty onChangedWithHistoryEventProperty)
+        {
+            EditorGUILayout.PropertyField(onChangedWithHistoryEventProperty, true);
+        }
+
+        protected virtual void DrawOnChangedEventProperty(SerializedProperty onChangedEventProperty)
+        {
+            EditorGUILayout.PropertyField(onChangedEventProperty, true);
+        }
+
+        protected virtual void DrawDefaultValuePropertyField(SerializedProperty defaultValueProperty,
+            string label = null)
+        {
+            if (label != null)
+                EditorGUILayout.PropertyField(defaultValueProperty, new GUIContent(label), true);
+            else
+                EditorGUILayout.PropertyField(defaultValueProperty, true);
+        }
+
+        protected virtual void DrawRuntimeValuePropertyField(SerializedProperty runtimeValueProperty,
+            string label = null)
+        {
+            if (label != null)
+                EditorGUILayout.PropertyField(runtimeValueProperty, new GUIContent(label), true);
+            else
+                EditorGUILayout.PropertyField(runtimeValueProperty, true);
         }
 
         //TODO Abstract into interface
