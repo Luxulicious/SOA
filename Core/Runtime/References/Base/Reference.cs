@@ -63,8 +63,8 @@ namespace SOA.Base
         [SerializeField] protected EE _onValueChangedWithHistoryEvent = new EE();
         [SerializeField, HideInInspector] private bool _foldout = false;
 
-        [SerializeField, HideInInspector] private V _prevGlobalValue;
-        [SerializeField, HideInInspector] private bool _foldoutEvents = false;
+        [SerializeField, HideInInspector] protected V _prevGlobalValue;
+        [SerializeField, HideInInspector] protected bool _foldoutEvents = false;
 
         public Reference()
         {
@@ -172,12 +172,12 @@ namespace SOA.Base
             _onValueChangedWithHistoryEvent.RemoveListener(action);
         }
 
-        public void OnBeforeSerialize()
+        public virtual void OnBeforeSerialize()
         {
             
         }
 
-        public void OnAfterDeserialize()
+        public virtual void OnAfterDeserialize()
         {
             _prevGlobalValue?.RemoveAutoSubscriber(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
             _globalValue?.RemoveAutoSubscriber(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
