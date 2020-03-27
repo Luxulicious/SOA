@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using SOA.Base;
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace SOA.Common.Primitives
 {
@@ -188,6 +189,24 @@ namespace SOA.Common.Primitives
         public void InvokeOnChangedToTrueEvent()
         {
             _onValueChangedToTrueEvent.Invoke(true);
+        }
+
+        public void AddAutoListener(UnityAction<bool> onChangeListener,
+            UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
+            UnityAction<bool> onValueChangedToFalseEventListener)
+        {
+            base.AddAutoListener(onChangeListener, onChangeWithHistoryListener);
+            _onValueChangedToTrueEvent.AddListener(onValueChangedToTrueEventListener);
+            _onValueChangedToFalseEvent.AddListener(onValueChangedToFalseEventListener);
+        }
+
+        public void RemoveAutoSubscriber(UnityAction<bool> onChangeListener,
+            UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
+            UnityAction<bool> onValueChangedToFalseEventListener)
+        {
+            base.RemoveAutoSubscriber(onChangeListener, onChangeWithHistoryListener);
+            _onValueChangedToTrueEvent.RemoveListener(onValueChangedToTrueEventListener);
+            _onValueChangedToFalseEvent.RemoveListener(onValueChangedToFalseEventListener);
         }
     }
 
