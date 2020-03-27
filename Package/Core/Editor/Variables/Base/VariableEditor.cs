@@ -13,6 +13,7 @@ namespace SOA.Base
         protected static readonly string _persistencePropertyPath = "_persistence";
         protected static readonly string _defaultValuePropertyPath = "_defaultValue";
         protected static readonly string _runtimeValuePropertyPath = "_runtimeValue";
+        protected static readonly string _foldOutOnChangeEventsPropertyPath = "_foldOutOnChangeEvents";
 
         public override void OnInspectorGUI()
         {
@@ -92,14 +93,19 @@ namespace SOA.Base
                     EditorGUI.EndDisabledGroup();
                 }
 
-                var onChangedEventProperty = serializedObject.FindProperty("_onChangeEvent");
-                var onChangedWithHistoryEventProperty = serializedObject.FindProperty("_onChangeWithHistoryEvent");
-                DrawOnChangeEventsPropertyFields(onChangedEventProperty, onChangedWithHistoryEventProperty);
+                var foldOutOnChangedEvents = serializedObject.FindProperty(_foldOutOnChangeEventsPropertyPath);
+                foldOutOnChangedEvents.boolValue = EditorGUILayout.Foldout(foldOutOnChangedEvents.boolValue, "On Change Events");
+                if (foldOutOnChangedEvents.boolValue)
+                {
+                    var onChangedEventProperty = serializedObject.FindProperty("_onChangeEvent");
+                    var onChangedWithHistoryEventProperty = serializedObject.FindProperty("_onChangeWithHistoryEvent");
+                    DrawOnChangeEventsPropertyFields(onChangedEventProperty, onChangedWithHistoryEventProperty);
 
-                EditorGUI.BeginDisabledGroup(!isPlaying);
-                var v = target as V;
-                DrawInvokeOnChangeEventsButtons(v);
-                EditorGUI.EndDisabledGroup();
+                    EditorGUI.BeginDisabledGroup(!isPlaying);
+                    var v = target as V;
+                    DrawInvokeOnChangeEventsButtons(v);
+                    EditorGUI.EndDisabledGroup();
+                }
             }
 
             PostOnInspectorGUI();
