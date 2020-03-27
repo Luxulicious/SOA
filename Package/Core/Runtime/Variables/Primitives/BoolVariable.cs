@@ -200,7 +200,7 @@ namespace SOA.Common.Primitives
             _onValueChangedToFalseEvent.AddListener(onValueChangedToFalseEventListener);
         }
 
-        public void RemoveAutoSubscriber(UnityAction<bool> onChangeListener,
+        public void RemoveAutoListener(UnityAction<bool> onChangeListener,
             UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
             UnityAction<bool> onValueChangedToFalseEventListener)
         {
