@@ -7,9 +7,6 @@ namespace SOA.Common.Primitives
     [Serializable]
     public class BoolReference : Reference<BoolVariable, bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver
     {
-        
-
-
         [SerializeField] private BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
         [SerializeField] private BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
 
@@ -20,7 +17,6 @@ namespace SOA.Common.Primitives
          )]
         //TODO Make this collapsible
         private bool _invertResult = false;
-
 
         public override bool Value
         {

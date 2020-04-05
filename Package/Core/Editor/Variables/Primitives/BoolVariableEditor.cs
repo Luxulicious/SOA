@@ -13,7 +13,7 @@ namespace SOA.Common.Primitives
         protected static readonly string _onValueChangedToFalseEventPropertyPath = "_onValueChangedToFalseEvent";
         protected static readonly string _andOrPropertyPath = "_andOr";
         protected static readonly string _memberValuesPropertyPath = "_memberValues";
-        
+
         protected override void DrawPersistencePropertyField(SerializedProperty useAsConstantProperty)
         {
             var compositeProperty = serializedObject.FindProperty(_compositePropertyPath);
@@ -36,7 +36,7 @@ namespace SOA.Common.Primitives
             base.DrawInvokeOnChangeEventsButtons(variable);
             EditorGUI.BeginDisabledGroup(!Application.isPlaying);
             if (GUILayout.Button("Invoke On Changed To True Event")) variable.InvokeOnChangedToTrueEvent();
-            if(GUILayout.Button("Invoke On Changed To False Event")) variable.InvokeOnChangedToFalseEvent();
+            if (GUILayout.Button("Invoke On Changed To False Event")) variable.InvokeOnChangedToFalseEvent();
             EditorGUI.EndDisabledGroup();
         }
 
@@ -44,9 +44,11 @@ namespace SOA.Common.Primitives
             SerializedProperty onChangedWithHistoryEventProperty)
         {
             base.DrawOnChangeEventsPropertyFields(onChangedEventProperty, onChangedWithHistoryEventProperty);
-            var onValueChangedToTrueEventProperty = serializedObject.FindProperty(_onValueChangedToTrueEventPropertyPath);
+            var onValueChangedToTrueEventProperty =
+                serializedObject.FindProperty(_onValueChangedToTrueEventPropertyPath);
             EditorGUILayout.PropertyField(onValueChangedToTrueEventProperty, true);
-            var onValueChangedToFalseEventProperty = serializedObject.FindProperty(_onValueChangedToFalseEventPropertyPath);
+            var onValueChangedToFalseEventProperty =
+                serializedObject.FindProperty(_onValueChangedToFalseEventPropertyPath);
             EditorGUILayout.PropertyField(onValueChangedToFalseEventProperty, true);
         }
 
@@ -58,14 +60,16 @@ namespace SOA.Common.Primitives
             var compositeValue = compositeProperty.boolValue;
             if (compositeValue)
             {
-                var andOrProperty = serializedObject.FindProperty(_andOrPropertyPath);
-                EditorGUILayout.PropertyField(andOrProperty, true);
                 var memberValuesProperty = serializedObject.FindProperty(_memberValuesPropertyPath);
+                var andOrProperty = serializedObject.FindProperty(_andOrPropertyPath);
+                if (memberValuesProperty.arraySize > 1)
+                    EditorGUILayout.PropertyField(andOrProperty, true);
                 EditorGUILayout.PropertyField(memberValuesProperty, true);
             }
         }
 
-        protected override void DrawRuntimeValuePropertyField(SerializedProperty runtimeValueProperty, string label = null)
+        protected override void DrawRuntimeValuePropertyField(SerializedProperty runtimeValueProperty,
+            string label = null)
         {
             var compositeProperty = serializedObject.FindProperty(_compositePropertyPath);
             var compositeValue = compositeProperty.boolValue;
