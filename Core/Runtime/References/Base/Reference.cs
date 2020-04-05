@@ -86,6 +86,18 @@ namespace SOA.Base
             _onValueChangedWithHistoryEvent?.Invoke(currentValue, previousValue);
         }
 
+        public virtual bool HasValue
+        {
+            get
+            {
+                if (_scope == Scope.Global)
+                    return _globalValue != null;
+                else if (_scope == Scope.Local)
+                    return _localValue != null;
+                return false;
+            }
+        }
+
         public V GlobalValue
         {
             get { return _globalValue; }
