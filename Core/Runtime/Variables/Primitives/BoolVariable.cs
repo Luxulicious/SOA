@@ -104,7 +104,7 @@ namespace SOA.Common.Primitives
         {
             if (_composite)
             {
-                if (_memberValues.Count > 0)
+                if (_memberValues.Count > 0 && _memberValues.Count(x => x == null) != _memberValues.Count)
                 {
                     bool result;
                     switch (_andOr)
@@ -112,21 +112,37 @@ namespace SOA.Common.Primitives
                         case BooleanOperator.And:
                             result = true;
                             foreach (var x in _memberValues)
+                            {
+                                if (x.HasValue)
+                                {
+                                    Debug.LogWarning("Not all composite members are filled in yet");
+                                    continue;
+                                }
+
                                 if (!x.Value)
                                 {
                                     result = false;
                                     break;
                                 }
+                            }
 
                             break;
                         case BooleanOperator.Or:
                             result = false;
                             foreach (var x in _memberValues)
+                            {
+                                if (x.HasValue)
+                                {
+                                    Debug.LogWarning("Not all composite members are filled in yet");
+                                    continue;
+                                }
+
                                 if (x.Value)
                                 {
                                     result = true;
                                     break;
                                 }
+                            }
 
                             break;
                         default:
