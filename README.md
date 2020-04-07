@@ -48,7 +48,6 @@ Known bugs and todo's:
 - Making things more pretty
 
 References:
-- Make references be able to reference another reference
 - Collapsing sometimes makes a label appear twice
 - References in array can collapse back-in, but can collapse out
 - References that are marked as dirty by unity will show 2 labels instead of 1
@@ -66,9 +65,6 @@ Attributes:
 - Add attributes to lock designers out of readonly reference etc. For example:
 ["LockPersistence"], [LockScope], [HideOnChange] etc...
 
-Lists:
-- Add reference to listvariables so they can be used from a monobehaviour
-
 Events:
 - Add a standard component for event listeners
 - Display events in a graph
@@ -84,6 +80,5 @@ Composite Variables:
 
 Additional features:
 Stacktracing event and variable change invocation
-Finding all references shortcut for game events and variables
 Decorators for modular scriptable object logic
 Add developer descriptions
