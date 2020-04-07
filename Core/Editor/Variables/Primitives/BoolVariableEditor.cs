@@ -52,9 +52,9 @@ namespace SOA.Common.Primitives
             EditorGUILayout.PropertyField(onValueChangedToFalseEventProperty, true);
         }
 
-        protected override void PostOnInspectorGUI()
+        protected override void PostOnChangedEvents()
         {
-            base.PostOnInspectorGUI();
+            base.PostOnChangedEvents();
             var compositeProperty = serializedObject.FindProperty(_compositePropertyPath);
             EditorGUILayout.PropertyField(compositeProperty, true);
             var compositeValue = compositeProperty.boolValue;

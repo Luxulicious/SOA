@@ -1,98 +1,13 @@
 ﻿using System;
+using System.Collections.Generic;
+#if UNITY_EDITOR
 using UnityEditor;
+#endif
 using UnityEngine;
 using UnityEngine.Events;
-using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
-    //TODO Move this to a separate file
-    /// <summary>
-    ///Add this class to where ever you use a reference
-    ///and call SetContextObject() in OnAfterDeserialize().
-    ///OnBeforeSerialize can be ignored.
-    /// </summary>
-    public interface IRegisteredReferenceContainer : ISerializationCallbackReceiver
-    {
-        void Register();
-        string Name { get; }
-        int GetInstanceId();
-    }
-
-    //TODO Move this to a separate file
-    /// <summary>
-    /// A monobehaviour alternative that allows for registering any reference.
-    /// </summary>
-    public abstract class RegisteredMonoBehaviour : MonoBehaviour, IRegisteredReferenceContainer
-    {
-        public virtual void OnBeforeSerialize()
-        {
-            //Do Nothing
-        }
-
-        public virtual void OnAfterDeserialize()
-        {
-            Register();
-        }
-
-        /// <summary>
-        /// Set the registration of any reference you want registered here.
-        /// </summary>
-        public abstract void Register();
-
-        string IRegisteredReferenceContainer.Name => this.name;
-
-        public int GetInstanceId()
-        {
-            return this.GetInstanceID();
-        }
-    }
-
-    //TODO Move these to a separate file
-    public interface IRegisteredReference<T, E, EE> where E : UnityEvent<T>, new() where EE : UnityEvent<T, T>, new()
-    {
-        void Register(IRegisteredReferenceContainer context);
-        bool HasRegistration();
-        void Ping();
-        void Select();
-    }
-
-    public interface IRegisteredReference<V, T, E, EE> : IRegisteredReference<T, E, EE> where V : Variable<T, E, EE> where E : UnityEvent<T>, new() where EE : UnityEvent<T, T>, new()
-    {
-        void Ping(V variable);
-        void Select(V variable);
-    }
-
-    //TODO Move these non-"Reference" classes to a seperate file and namespace/class
-    public enum Persistence
-    {
-        Variable,
-        Constant
-    }
-
-    //TODO Move this to a separate file
-    [Serializable]
-    public class PersistenceException : Exception
-    {
-        public PersistenceException()
-        {
-
-        }
-
-        public PersistenceException(string message)
-            : base(message)
-        {
-
-        }
-    }
-    
-    //TODO Move this to a separate file
-    public enum Scope
-    {
-        Local,
-        Global
-    }
-
     public abstract class Reference
     {
         [SerializeField] protected Scope _scope = Scope.Global;
@@ -131,7 +46,7 @@ namespace SOA.Base
         /// </summary>
         public Reference()
         {
-
+           
         }
 
         /// <summary>
@@ -164,12 +79,13 @@ namespace SOA.Base
             _scope = Scope.Local;
         }
 
-        protected virtual void InvokeOnChangeResponses(T currentValue)
+
+        protected virtual void InvokeOnValueChanged(T currentValue)
         {
             _onValueChangedEvent?.Invoke(currentValue);
         }
 
-        protected virtual void InvokeOnValueChangeWithHistoryResponses(T currentValue, T previousValue)
+        protected virtual void InvokeOnValueChangedWithHistory(T currentValue, T previousValue)
         {
             _onValueChangedWithHistoryEvent?.Invoke(currentValue, previousValue);
         }
@@ -252,22 +168,22 @@ namespace SOA.Base
             return ((T) obj).Equals(Value);
         }
         
-        public void AddListener(UnityAction<T> action)
+        public void AddListenerToOnValueChanged(UnityAction<T> action)
         {
             _onValueChangedEvent.AddListener(action);
         }
 
-        public void RemoveListener(UnityAction<T> action)
+        public void RemoveListenerFromOnValueChanged(UnityAction<T> action)
         {
             _onValueChangedEvent.RemoveListener(action);
         }
 
-        public void AddListener(UnityAction<T, T>  action)
+        public void AddListenerToOnValueChangedWithHistory(UnityAction<T, T>  action)
         {
             _onValueChangedWithHistoryEvent.AddListener(action);
         }
 
-        public void RemoveListener(UnityAction<T, T> action)
+        public void RemoveListenerFromOnValueChangedWithHistory(UnityAction<T, T> action)
         {
             _onValueChangedWithHistoryEvent.RemoveListener(action);
         }
@@ -279,6 +195,13 @@ namespace SOA.Base
 
         public virtual void OnAfterDeserialize()
         {
+            RefreshListenersToGlobalValueOnValueChangedEvents();
+            RefreshRegistrationsToGlobalValue();
+            _prevGlobalValue = _globalValue;
+        }
+
+        public virtual void RefreshRegistrationsToGlobalValue()
+        {
             if (!HasRegistration())
             {
                 Debug.LogWarning(
@@ -286,43 +209,32 @@ namespace SOA.Base
                     $"Please register when instancing a reference. \n" +
                     $"This can be done manually or by using {typeof(RegisteredMonoBehaviour).Name} instead of {typeof(MonoBehaviour).Name}."
                     , _globalValue);
-                _prevGlobalValue?.RemoveUnregisteredAutoListener(InvokeOnChangeResponses,
-                    InvokeOnValueChangeWithHistoryResponses);
-                _globalValue?.RemoveUnregisteredAutoListener(InvokeOnChangeResponses,
-                    InvokeOnValueChangeWithHistoryResponses);
-                _globalValue?.AddUnregisteredAutoListener(InvokeOnChangeResponses,
-                    InvokeOnValueChangeWithHistoryResponses);
             }
             else
             {
-                _prevGlobalValue?.RemoveRegisteredAutoListener
-                (
-                    InvokeOnChangeResponses, 
-                    InvokeOnValueChangeWithHistoryResponses,
-                    _registration,
-                    this
-                );
-                _globalValue?.RemoveRegisteredAutoListener
-                (
-                    InvokeOnChangeResponses,
-                    InvokeOnValueChangeWithHistoryResponses,
-                    _registration,
-                    this
-                );
-                _globalValue?.AddRegisteredAutoListener
-                (
-                    InvokeOnChangeResponses,
-                    InvokeOnValueChangeWithHistoryResponses,
-                    _registration,
-                    this
-                );
+                _prevGlobalValue?.RemoveRegistration(_registration, this);
+                _globalValue?.RemoveRegistration(_registration, this);
+                _globalValue?.AddRegistration(_registration, this);
             }
-            _prevGlobalValue = _globalValue;
+        }
+
+        public virtual void RefreshListenersToGlobalValueOnValueChangedEvents()
+        {
+            //Remove existing listeners from previous global value
+            _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+            _prevGlobalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+            //Remove existing listeners from current global value
+            _globalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+            _globalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+            //Add listeners to current global Value
+            _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
+            _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
         }
 
         public void Register(IRegisteredReferenceContainer registeredReferenceContainer)
         {
             _registration = registeredReferenceContainer;
+            RefreshRegistrationsToGlobalValue();
         }
 
         public bool HasRegistration()

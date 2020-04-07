@@ -8,7 +8,8 @@ using UnityEngine.Events;
 namespace SOA.Common.Primitives
 {
     [CreateAssetMenu(fileName = "New Bool Variable", menuName = "SOA/Primitives/Bool/Variable", order = 1)]
-    public class BoolVariable : Variable<bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver
+    public class BoolVariable : Variable<bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver,
+        IRegisteredReferenceContainer
     {
         [SerializeField] private BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
         [SerializeField] private BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
@@ -179,6 +180,7 @@ namespace SOA.Common.Primitives
         public void OnAfterDeserialize()
         {
             if (!_composite) return;
+            Register();
             try
             {
                 UpdateComposite();
@@ -207,6 +209,35 @@ namespace SOA.Common.Primitives
             _onValueChangedToTrueEvent.Invoke(true);
         }
 
+        public void AddListenerToOnChangeToTrueEvent(UnityAction<bool> action)
+        {
+            _onValueChangedToTrueEvent.AddListener(action);
+        }
+
+        public void AddListenerToOnChangeToFalseEvent(UnityAction<bool> action)
+        {
+            _onValueChangedToFalseEvent.AddListener(action);
+        }
+
+        public void RemoveListenerFromOnChangeToTrueEvent(UnityAction<bool> action)
+        {
+            _onValueChangedToTrueEvent.RemoveListener(action);
+        }
+
+        public void RemoveListenerFromOnChangeToFalseEvent(UnityAction<bool> action)
+        {
+            _onValueChangedToFalseEvent.RemoveListener(action);
+        }
+
+        public void Register()
+        {
+            if (!_composite) return;
+            foreach (var memberValue in _memberValues)
+                if (memberValue?.Scope == Scope.Global)
+                    memberValue?.GlobalValue?.AddRegistration(this, memberValue);
+        }
+
+        [Obsolete]
         public void AddAutoListener(UnityAction<bool> onChangeListener,
             UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
             UnityAction<bool> onValueChangedToFalseEventListener)
@@ -216,6 +247,7 @@ namespace SOA.Common.Primitives
             _onValueChangedToFalseEvent.AddListener(onValueChangedToFalseEventListener);
         }
 
+        [Obsolete]
         public void RemoveAutoListener(UnityAction<bool> onChangeListener,
             UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
             UnityAction<bool> onValueChangedToFalseEventListener)
