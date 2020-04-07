@@ -40,6 +40,7 @@ And has taken ideas and concepts from:
 - <a href="https://github.com/sigtrapgames/SmartData">https://github.com/sigtrapgames/SmartData</a>
 - <a href="https://github.com/AdamRamberg/unity-atoms">https://github.com/AdamRamberg/unity-atoms</a>
 - <a href="https://github.com/DanielEverland/ScriptableObject-Architecture">https://github.com/DanielEverland/ScriptableObject-Architecture</a>
+
 I highly recommend giving these all a try, these are all better in some ways (and *worse* in some ways incase of my particular workflow, hence I made this package in the first place)
 
 ## Missing Features & Known Bugs
