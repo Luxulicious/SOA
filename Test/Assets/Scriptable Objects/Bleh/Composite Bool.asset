@@ -1,0 +1,53 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 75e2a1d22f641c541869ee29b8d21d54, type: 3}
+  m_Name: Composite Bool
+  m_EditorClassIdentifier: 
+  _defaultValue: 0
+  _runtimeValue: 1
+  _persistence: 0
+  _foldOutOnChangeEvents: 0
+  _onChangeEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _onChangeWithHistoryEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _onValueChangedToTrueEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _onValueChangedToFalseEvent:
+    m_PersistentCalls:
+      m_Calls: []
+  _composite: 1
+  _andOr: 0
+  _memberValues:
+  - _scope: 1
+    _persistence: 0
+    _localValue: 0
+    _globalValue: {fileID: 11400000, guid: 3484d972abdca654394e95ef7f851e72, type: 2}
+    _onValueChangedEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedWithHistoryEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _foldout: 0
+    _prevGlobalValue: {fileID: 11400000, guid: 3484d972abdca654394e95ef7f851e72, type: 2}
+    _foldoutEvents: 0
+    _onValueChangedToTrueEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedToFalseEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _invertResult: 0

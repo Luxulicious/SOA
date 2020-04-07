@@ -10,9 +10,9 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 75e2a1d22f641c541869ee29b8d21d54, type: 3}
-  m_Name: New Bool Variable
+  m_Name: Member Bool
   m_EditorClassIdentifier: 
-  _defaultValue: 0
+  _defaultValue: 1
   _runtimeValue: 0
   _persistence: 0
   _foldOutOnChangeEvents: 0
