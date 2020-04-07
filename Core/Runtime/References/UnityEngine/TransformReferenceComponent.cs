@@ -8,5 +8,6 @@ namespace SOA.Common.UnityEngine
     public class TransformReferenceComponent : ReferenceComponent<TransformReference, TransformVariable, Transform,
         TransformUnityEvent, TransformTransformUnityEvent>
     {
+
     }
 }

@@ -1,4 +1,8 @@
-﻿using JetBrains.Annotations;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -94,7 +98,8 @@ namespace SOA.Base
                 }
 
                 var foldOutOnChangedEvents = serializedObject.FindProperty(_foldOutOnChangeEventsPropertyPath);
-                foldOutOnChangedEvents.boolValue = EditorGUILayout.Foldout(foldOutOnChangedEvents.boolValue, "On Change Events");
+                foldOutOnChangedEvents.boolValue =
+                    EditorGUILayout.Foldout(foldOutOnChangedEvents.boolValue, "On Change Events");
                 if (foldOutOnChangedEvents.boolValue)
                 {
                     var onChangedEventProperty = serializedObject.FindProperty("_onChangeEvent");
@@ -108,9 +113,57 @@ namespace SOA.Base
                 }
             }
 
+            //TODO Draw references form
+            DrawUses();
+
             PostOnInspectorGUI();
 
             serializedObject.ApplyModifiedProperties();
+        }
+
+        public virtual void DrawUses()
+        {
+            //TODO Replace with serialized property
+            var referencesFoldOut = true;
+            if (EditorGUILayout.Foldout(referencesFoldOut, "Uses"))
+            {
+                EditorGUI.indentLevel += 1;
+
+                //TODO Replace with serialized property
+                var sceneReferencesFoldOut = true;
+                if (EditorGUILayout.Foldout(sceneReferencesFoldOut, "Scene"))
+                {
+                    if (GUILayout.Button("Refresh")) throw new NotImplementedException();
+
+                    var variable = (serializedObject.targetObject as Variable<T, E, EE>);
+                    var registrations = variable?.Registrations;
+                    if (registrations != null)
+                        foreach (var reg in registrations)
+                        {
+                            EditorGUILayout.BeginHorizontal();
+                            EditorGUILayout.LabelField(reg.Key.Name);
+                            if (GUILayout.Button("Ping"))
+                            {
+                                reg.Value.First().Ping();
+                            }
+
+                            if (GUILayout.Button("Select"))
+                            {
+                                reg.Value.First().Select();
+                            }
+                            EditorGUILayout.EndHorizontal();
+                        }
+                }
+
+                //TODO Replace with serialized property
+                var folderReferencesFoldOut = true;
+                if (EditorGUILayout.Foldout(folderReferencesFoldOut, "Folder"))
+                    EditorGUILayout.LabelField("Test Folder");
+
+                EditorGUI.indentLevel -= 1;
+            }
+
+            //throw new NotImplementedException();
         }
 
         protected virtual void DrawInvokeOnChangeEventsButtons(V variable)
