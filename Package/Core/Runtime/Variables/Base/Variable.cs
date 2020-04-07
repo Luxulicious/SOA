@@ -26,7 +26,7 @@ namespace SOA.Base
         public abstract void Register();
     }
 
-    public abstract class Variable<T, E, EE> : ScriptableObject 
+    public abstract class Variable<T, E, EE> : ScriptableObject, ISerializationCallbackReceiver
         where EE : UnityEvent<T, T>, new() where E : UnityEvent<T>, new()
     {
         [SerializeField] protected T _defaultValue;
@@ -159,6 +159,8 @@ namespace SOA.Base
                 Registrations[referenceContainer].Add(reference);
             else
                 Registrations.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
+
+            CleanupRegistrations();
         }
 
         public virtual void RemoveRegistration(
@@ -169,10 +171,42 @@ namespace SOA.Base
             Registrations[referenceContainer].Remove(reference);
             if (Registrations[referenceContainer].Count < 1)
                 Registrations.Remove(referenceContainer);
+
+            CleanupRegistrations();
+        }
+
+        private void CleanupRegistrations()
+        {
+            //Remove registrations that don't have any values
+            var registrationsWithoutReferences = new List<IRegisteredReferenceContainer>();
+            foreach (var registration in _registrations)
+            {
+                if (registration.Value.Count <= 0)
+                {
+                    registrationsWithoutReferences.Add(registration.Key);
+                    continue;
+                }
+            }
+            registrationsWithoutReferences.ForEach(x => registrationsWithoutReferences.Remove(x));
+            //Remove null references from registrations
+            foreach (var registration in _registrations)
+            {
+                registration.Value.Remove(null);
+            }
+        }
+
+        public virtual void OnBeforeSerialize()
+        {
+            //Do nothing
+        }
+
+        public virtual void OnAfterDeserialize()
+        {
+            CleanupRegistrations();
         }
 
         #endregion
-        
+
         #region Methods for forcing event invocation
 
         public void ForceInvokeOnChangeEvent()
@@ -245,5 +279,7 @@ namespace SOA.Base
         }
 
         #endregion
+
+        
     }
 }
