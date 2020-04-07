@@ -211,7 +211,7 @@ namespace SOA.Common.Primitives
             UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
             UnityAction<bool> onValueChangedToFalseEventListener)
         {
-            base.AddAutoListener(onChangeListener, onChangeWithHistoryListener);
+            base.AddUnregisteredAutoListener(onChangeListener, onChangeWithHistoryListener);
             _onValueChangedToTrueEvent.AddListener(onValueChangedToTrueEventListener);
             _onValueChangedToFalseEvent.AddListener(onValueChangedToFalseEventListener);
         }
@@ -220,7 +220,7 @@ namespace SOA.Common.Primitives
             UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
             UnityAction<bool> onValueChangedToFalseEventListener)
         {
-            base.RemoveAutoSubscriber(onChangeListener, onChangeWithHistoryListener);
+            base.RemoveUnregisteredAutoListener(onChangeListener, onChangeWithHistoryListener);
             _onValueChangedToTrueEvent.RemoveListener(onValueChangedToTrueEventListener);
             _onValueChangedToFalseEvent.RemoveListener(onValueChangedToFalseEventListener);
         }

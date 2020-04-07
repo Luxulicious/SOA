@@ -1,5 +1,6 @@
 ﻿using System;
 using SOA.Base;
+using Object = UnityEngine.Object;
 
 namespace SOA.Common.Primitives
 {
@@ -9,8 +10,12 @@ namespace SOA.Common.Primitives
         public IntReference()
         {
         }
+        
+        public IntReference(IRegisteredReferenceContainer registration) : base(registration)
+        {
+        }
 
-        public IntReference(int value) : base(value)
+        public IntReference(IRegisteredReferenceContainer registration, int value) : base(registration, value)
         {
         }
 

@@ -1,11 +1,12 @@
 ﻿using System;
 using SOA.Base;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SOA.Common.Primitives
 {
     [Serializable]
-    public class BoolReference : Reference<BoolVariable, bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver
+    public class BoolReference : Reference<BoolVariable, bool, BoolUnityEvent, BoolBoolUnityEvent>
     {
         [SerializeField] private BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
         [SerializeField] private BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
@@ -17,6 +18,14 @@ namespace SOA.Common.Primitives
          )]
         //TODO Make this collapsible
         private bool _invertResult = false;
+
+        public BoolReference(IRegisteredReferenceContainer registration) : base(registration)
+        {
+        }
+
+        public BoolReference(IRegisteredReferenceContainer registration, bool value) : base(registration, value)
+        {
+        }
 
         public override bool Value
         {
@@ -62,6 +71,12 @@ namespace SOA.Common.Primitives
             _globalValue?.RemoveAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses, InvokeOnValueChangedToTrueResponses, InvokeOnValueChangedToFalseResponses);
             _globalValue?.AddAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses, InvokeOnValueChangedToTrueResponses, InvokeOnValueChangedToFalseResponses);
             _prevGlobalValue = _globalValue;
+            if (!HasRegistration())
+                Debug.LogWarning(
+                    $"No registration found for {typeof(Reference).Name} {this}. \n" +
+                    $"Please register when instancing a reference. \n" +
+                    $"This can be done manually or by using {typeof(RegisteredMonoBehaviour).Name} instead of {typeof(MonoBehaviour).Name}."
+                    , _globalValue);
         }
     }
 }

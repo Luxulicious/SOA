@@ -1,6 +1,7 @@
 using System;
 using SOA.Base;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 //TODO Move to seperate file
 public interface IInput
@@ -21,5 +22,13 @@ namespace SOA.Common.UnityEngine
 
     {
         public bool Active => Input.GetKey(Value);
+
+        public KeyCodeReference(IRegisteredReferenceContainer registration) : base(registration)
+        {
+        }
+
+        public KeyCodeReference(IRegisteredReferenceContainer registration, KeyCode value) : base(registration, value)
+        {
+        }
     }
 }

@@ -9,8 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 75e2a1d22f641c541869ee29b8d21d54, type: 3}
-  m_Name: New Bool Variable
+  m_Script: {fileID: 11500000, guid: 36c4c7de29dbfd145a50c3797a697642, type: 3}
+  m_Name: New Float Variable
   m_EditorClassIdentifier: 
   _defaultValue: 0
   _runtimeValue: 0
@@ -22,12 +22,3 @@ MonoBehaviour:
   _onChangeWithHistoryEvent:
     m_PersistentCalls:
       m_Calls: []
-  _onValueChangedToTrueEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  _onValueChangedToFalseEvent:
-    m_PersistentCalls:
-      m_Calls: []
-  _composite: 0
-  _andOr: 0
-  _memberValues: []

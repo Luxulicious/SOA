@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Events;
+using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
@@ -10,7 +14,12 @@ namespace SOA.Base
         [SerializeField] protected T _defaultValue;
         [SerializeField] protected T _runtimeValue;
         [SerializeField] protected Persistence _persistence;
-        [SerializeField, HideInInspector] protected bool _foldOutOnChangeEvents = false;
+
+        [SerializeField] [HideInInspector] protected bool _foldOutOnChangeEvents = false;
+
+        [SerializeField] [HideInInspector]
+        protected Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference<T, E, EE>>> _registrations =
+            new Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference<T, E, EE>>>();
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
         protected E _onChangeEvent = new E();
@@ -27,7 +36,7 @@ namespace SOA.Base
                 if (!Application.isPlaying) _defaultValue = value;
                 else
                     Debug.LogError(
-                        $"{(this.name.EndsWith("s", StringComparison.CurrentCultureIgnoreCase) ? (this.name + "\'") : (this.name + "\'s"))} default value cannot be set while in playmode");
+                        $"{(name.EndsWith("s", StringComparison.CurrentCultureIgnoreCase) ? name + "\'" : name + "\'s")} default value cannot be set while in playmode");
             }
 #endif
         }
@@ -49,7 +58,9 @@ namespace SOA.Base
                                 return;
                         }
                         else if (_runtimeValue == null && prevValue == null)
+                        {
                             return;
+                        }
 
                         InvokeOnChangeEvents(prevValue, _runtimeValue);
                         break;
@@ -77,9 +88,13 @@ namespace SOA.Base
             set
             {
                 if (!Application.isPlaying) _persistence = value;
-                else Debug.LogError($"Persistence settings of {this.name} cannot be changed during playmode", this);
+                else Debug.LogError($"Persistence settings of {name} cannot be changed during playmode", this);
             }
         }
+
+        public Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference<T, E, EE>>>
+            Registrations =>
+            _registrations;
 
         private void OnEnable()
         {
@@ -91,13 +106,52 @@ namespace SOA.Base
             _runtimeValue = _defaultValue;
         }
 
-        public virtual void AddAutoListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
+        public virtual void AddRegisteredAutoListener(UnityAction<T> onChangeListener,
+            UnityAction<T, T> onChangeWithHistoryListener,
+            IRegisteredReferenceContainer referenceContainer,
+            IRegisteredReference<T, E, EE> reference)
+        {
+            AddListener(onChangeListener, onChangeWithHistoryListener);
+            if (Registrations.ContainsKey(referenceContainer))
+                Registrations[referenceContainer].Add(reference);
+            else
+                Registrations.Add(referenceContainer, new HashSet<IRegisteredReference<T, E, EE>>(){reference});
+            Debug.Log("Registration count: " + _registrations.Count);
+
+        }
+
+        public virtual void AddUnregisteredAutoListener(UnityAction<T> onChangeListener,
+            UnityAction<T, T> onChangeWithHistoryListener)
+        {
+            AddListener(onChangeListener, onChangeWithHistoryListener);
+        }
+
+        private void AddListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
             _onChangeEvent.AddListener(onChangeListener);
             _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);
         }
 
-        public virtual void RemoveAutoSubscriber(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
+        public virtual void RemoveRegisteredAutoListener(
+            UnityAction<T> onChangeListener,
+            UnityAction<T, T> onChangeWithHistoryListener,
+            IRegisteredReferenceContainer referenceContainer,
+            IRegisteredReference<T, E, EE> reference)
+        {
+            AddListener(onChangeListener, onChangeWithHistoryListener);
+            if (!Registrations.ContainsKey(referenceContainer)) return;
+            Registrations[referenceContainer].Remove(reference);
+            if (Registrations[referenceContainer].Count < 1)
+                Registrations.Remove(referenceContainer);
+        }
+
+        public virtual void RemoveUnregisteredAutoListener(UnityAction<T> onChangeListener,
+            UnityAction<T, T> onChangeWithHistoryListener)
+        {
+            RemoveListener(onChangeListener, onChangeWithHistoryListener);
+        }
+
+        private void RemoveListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
             _onChangeEvent.AddListener(onChangeListener);
             _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);

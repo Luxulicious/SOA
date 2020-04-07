@@ -1,9 +1,68 @@
 ﻿using System;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
+    //TODO Move this to a separate file
+    /// <summary>
+    ///Add this class to where ever you use a reference
+    ///and call SetContextObject() in OnAfterDeserialize().
+    ///OnBeforeSerialize can be ignored.
+    /// </summary>
+    public interface IRegisteredReferenceContainer : ISerializationCallbackReceiver
+    {
+        void Register();
+        string Name { get; }
+        int GetInstanceId();
+    }
+
+    //TODO Move this to a separate file
+    /// <summary>
+    /// A monobehaviour alternative that allows for registering any reference.
+    /// </summary>
+    public abstract class RegisteredMonoBehaviour : MonoBehaviour, IRegisteredReferenceContainer
+    {
+        public virtual void OnBeforeSerialize()
+        {
+            //Do Nothing
+        }
+
+        public virtual void OnAfterDeserialize()
+        {
+            Register();
+        }
+
+        /// <summary>
+        /// Set the registration of any reference you want registered here.
+        /// </summary>
+        public abstract void Register();
+
+        string IRegisteredReferenceContainer.Name => this.name;
+
+        public int GetInstanceId()
+        {
+            return this.GetInstanceID();
+        }
+    }
+
+    //TODO Move these to a separate file
+    public interface IRegisteredReference<T, E, EE> where E : UnityEvent<T>, new() where EE : UnityEvent<T, T>, new()
+    {
+        void Register(IRegisteredReferenceContainer context);
+        bool HasRegistration();
+        void Ping();
+        void Select();
+    }
+
+    public interface IRegisteredReference<V, T, E, EE> : IRegisteredReference<T, E, EE> where V : Variable<T, E, EE> where E : UnityEvent<T>, new() where EE : UnityEvent<T, T>, new()
+    {
+        void Ping(V variable);
+        void Select(V variable);
+    }
+
     //TODO Move these non-"Reference" classes to a seperate file and namespace/class
     public enum Persistence
     {
@@ -11,6 +70,7 @@ namespace SOA.Base
         Constant
     }
 
+    //TODO Move this to a separate file
     [Serializable]
     public class PersistenceException : Exception
     {
@@ -24,10 +84,9 @@ namespace SOA.Base
         {
 
         }
-
-
     }
-
+    
+    //TODO Move this to a separate file
     public enum Scope
     {
         Local,
@@ -52,7 +111,7 @@ namespace SOA.Base
         }
     }
 
-    public abstract class Reference<V, T, E, EE> : Reference, ISerializationCallbackReceiver
+    public abstract class Reference<V, T, E, EE> : Reference, IRegisteredReference<V, T, E, EE>, ISerializationCallbackReceiver
         where V : Variable<T, E, EE>
         where E : UnityEvent<T>, new()
         where EE : UnityEvent<T, T>, new()
@@ -65,13 +124,42 @@ namespace SOA.Base
 
         [SerializeField, HideInInspector] protected V _prevGlobalValue;
         [SerializeField, HideInInspector] protected bool _foldoutEvents = false;
+        [SerializeField, HideInInspector] protected IRegisteredReferenceContainer _registration;
 
+        /// <summary>
+        /// Creates an unregistered reference.
+        /// </summary>
         public Reference()
         {
+
         }
 
+        /// <summary>
+        /// Creates an unregistered reference with a local scope.
+        /// </summary>
+        /// <param name="value">Local value</param>
         public Reference(T value)
         {
+            _localValue = value;
+            _scope = Scope.Local;
+        }
+
+        /// <summary>
+        /// Creates an registered reference.
+        /// </summary>
+        /// <param name="value">Local value</param>
+        public Reference(IRegisteredReferenceContainer registeredReferenceContainer)
+        {
+            _registration = registeredReferenceContainer;
+        }
+
+        /// <summary>
+        /// Creates an registered reference with a local scope.
+        /// </summary>
+        /// <param name="value">Local value</param>
+        public Reference(IRegisteredReferenceContainer registeredReferenceContainer, T value)
+        {
+            _registration = registeredReferenceContainer;
             _localValue = value;
             _scope = Scope.Local;
         }
@@ -186,15 +274,108 @@ namespace SOA.Base
 
         public virtual void OnBeforeSerialize()
         {
-            
+            //Do Nothing
         }
 
         public virtual void OnAfterDeserialize()
         {
-            _prevGlobalValue?.RemoveAutoSubscriber(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
-            _globalValue?.RemoveAutoSubscriber(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
-            _globalValue?.AddAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses);
+            if (!HasRegistration())
+            {
+                Debug.LogWarning(
+                    $"No registration found for {typeof(Reference).Name} {this}. \n" +
+                    $"Please register when instancing a reference. \n" +
+                    $"This can be done manually or by using {typeof(RegisteredMonoBehaviour).Name} instead of {typeof(MonoBehaviour).Name}."
+                    , _globalValue);
+                _prevGlobalValue?.RemoveUnregisteredAutoListener(InvokeOnChangeResponses,
+                    InvokeOnValueChangeWithHistoryResponses);
+                _globalValue?.RemoveUnregisteredAutoListener(InvokeOnChangeResponses,
+                    InvokeOnValueChangeWithHistoryResponses);
+                _globalValue?.AddUnregisteredAutoListener(InvokeOnChangeResponses,
+                    InvokeOnValueChangeWithHistoryResponses);
+            }
+            else
+            {
+                _prevGlobalValue?.RemoveRegisteredAutoListener
+                (
+                    InvokeOnChangeResponses, 
+                    InvokeOnValueChangeWithHistoryResponses,
+                    _registration,
+                    this
+                );
+                _globalValue?.RemoveRegisteredAutoListener
+                (
+                    InvokeOnChangeResponses,
+                    InvokeOnValueChangeWithHistoryResponses,
+                    _registration,
+                    this
+                );
+                _globalValue?.AddRegisteredAutoListener
+                (
+                    InvokeOnChangeResponses,
+                    InvokeOnValueChangeWithHistoryResponses,
+                    _registration,
+                    this
+                );
+            }
             _prevGlobalValue = _globalValue;
+        }
+
+        public void Register(IRegisteredReferenceContainer registeredReferenceContainer)
+        {
+            _registration = registeredReferenceContainer;
+        }
+
+        public bool HasRegistration()
+        {
+            return _registration != null;
+        }
+
+        public void Ping(V variable)
+        {
+#if UNITY_EDITOR
+            if (_globalValue != variable) return;
+            switch (_scope)
+            {
+                case Scope.Local:
+                    return;
+                case Scope.Global:
+                    Ping();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+#endif
+        }
+
+        public void Select(V variable)
+        {
+#if UNITY_EDITOR
+            if (_globalValue != variable) return;
+            switch (_scope)
+            {
+                case Scope.Local:
+                    return;
+                case Scope.Global:
+                    Select();
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
+#endif
+        }
+
+        public void Ping()
+        {
+#if UNITY_EDITOR
+            EditorGUIUtility.PingObject(_registration as UnityEngine.Object);
+#endif  
+        }
+
+        public void Select()
+        {
+#if UNITY_EDITOR
+            Selection.activeObject = _registration as UnityEngine.Object;
+#endif
         }
     }
 }

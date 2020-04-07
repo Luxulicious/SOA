@@ -8,11 +8,11 @@ using UnityEngine.Experimental.PlayerLoop;
 
 public class DirectionalBooleansToVector2 : MonoBehaviour
 {
-    [SerializeField] private BoolReference _up = new BoolReference(){Persistence = Persistence.Variable, Scope = Scope.Global};
-    [SerializeField] private BoolReference _down = new BoolReference() { Persistence = Persistence.Variable, Scope = Scope.Global };
-    [SerializeField] private BoolReference _right = new BoolReference() { Persistence = Persistence.Variable, Scope = Scope.Global };
-    [SerializeField] private BoolReference _left = new BoolReference() { Persistence = Persistence.Variable, Scope = Scope.Global };
-    [SerializeField] private Vector2Reference _vector2 = new Vector2Reference() { Persistence = Persistence.Variable, Scope = Scope.Global };
+    [SerializeField] private BoolReference _up;
+    [SerializeField] private BoolReference _down;
+    [SerializeField] private BoolReference _right;
+    [SerializeField] private BoolReference _left;
+    [SerializeField] private Vector2Reference _vector2;
 
     void Update()
     {

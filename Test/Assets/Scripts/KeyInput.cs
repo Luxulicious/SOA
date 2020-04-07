@@ -5,11 +5,9 @@ using UnityEngine;
 
 public class KeyInput : MonoBehaviour
 {
-    [SerializeField] private KeyCodeReference _keyCode = new KeyCodeReference()
-        { Persistence = Persistence.Variable, Scope = Scope.Global };
+    [SerializeField] private KeyCodeReference _keyCode;
 
-    [SerializeField] private BoolReference _onKeyPressed = new BoolReference()
-        {Persistence = Persistence.Variable, Scope = Scope.Global};
+    [SerializeField] private BoolReference _onKeyPressed;
 
     void Update()
     {
