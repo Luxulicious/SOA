@@ -8,7 +8,25 @@ using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
-    public abstract class Variable<T, E, EE> : ScriptableObject
+    /// <summary>
+    /// A ScriptableObject alternative that allows for registering any reference.
+    /// </summary>
+    public abstract class RegisteredScriptableObject : ScriptableObject, IRegisteredReferenceContainer
+    {
+        public virtual void OnAfterDeserialize()
+        {
+            Register();
+        }
+
+        public virtual void OnBeforeSerialize()
+        {
+            //Do nothing
+        }
+
+        public abstract void Register();
+    }
+
+    public abstract class Variable<T, E, EE> : ScriptableObject 
         where EE : UnityEvent<T, T>, new() where E : UnityEvent<T>, new()
     {
         [SerializeField] protected T _defaultValue;
@@ -16,16 +34,17 @@ namespace SOA.Base
         [SerializeField] protected Persistence _persistence;
 
         [SerializeField] [HideInInspector] protected bool _foldOutOnChangeEvents = false;
+        [SerializeField] [HideInInspector] protected bool _foldOutUses = false;
 
         [SerializeField] [HideInInspector]
-        protected Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference<T, E, EE>>> _registrations =
-            new Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference<T, E, EE>>>();
+        protected Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>> _registrations =
+            new Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>>();
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
-        protected E _onChangeEvent = new E();
+        protected E _onValueChangedEvent = new E();
 
         [Tooltip("Invokes an event with the previous value and the current value as arguments")] [SerializeField]
-        protected EE _onChangeWithHistoryEvent = new EE();
+        protected EE _onValueChangedWithHistoryEvent = new EE();
 
         public virtual T DefaultValue
         {
@@ -77,8 +96,8 @@ namespace SOA.Base
 
         protected virtual void InvokeOnChangeEvents(T prev, T value)
         {
-            _onChangeEvent.Invoke(value);
-            _onChangeWithHistoryEvent.Invoke(value, prev);
+            _onValueChangedEvent.Invoke(value);
+            _onValueChangedWithHistoryEvent.Invoke(value, prev);
         }
 
         public virtual Persistence Persistence
@@ -92,7 +111,7 @@ namespace SOA.Base
             }
         }
 
-        public Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference<T, E, EE>>>
+        public Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>>
             Registrations =>
             _registrations;
 
@@ -106,37 +125,103 @@ namespace SOA.Base
             _runtimeValue = _defaultValue;
         }
 
+
+        #region Listeners
+
+        public virtual void AddListenerToOnChange(UnityAction<T> action)
+        {
+            _onValueChangedEvent.AddListener(action);
+        }
+
+        public virtual void RemoveListenerFromOnChange(UnityAction<T> action)
+        {
+            _onValueChangedEvent.RemoveListener(action);
+        }
+
+        public virtual void AddListenerToOnChangeWithHistory(UnityAction<T, T> action)
+        {
+            _onValueChangedWithHistoryEvent.AddListener(action);
+        }
+
+        public virtual void RemoveListenerFromOnChangeWithHistory(UnityAction<T, T> action)
+        {
+            _onValueChangedWithHistoryEvent.AddListener(action);
+        }
+
+        #endregion
+
+        #region Registration
+
+        public virtual void AddRegistration(IRegisteredReferenceContainer referenceContainer,
+            IRegisteredReference reference)
+        {
+            if (Registrations.ContainsKey(referenceContainer))
+                Registrations[referenceContainer].Add(reference);
+            else
+                Registrations.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
+        }
+
+        public virtual void RemoveRegistration(
+            IRegisteredReferenceContainer referenceContainer,
+            IRegisteredReference reference)
+        {
+            if (!Registrations.ContainsKey(referenceContainer)) return;
+            Registrations[referenceContainer].Remove(reference);
+            if (Registrations[referenceContainer].Count < 1)
+                Registrations.Remove(referenceContainer);
+        }
+
+        #endregion
+        
+        #region Methods for forcing event invocation
+
+        public void ForceInvokeOnChangeEvent()
+        {
+            _onValueChangedEvent.Invoke(_runtimeValue);
+        }
+
+        public void ForceInvokeOnChangeWithHistoryEvent()
+        {
+            _onValueChangedWithHistoryEvent.Invoke(_runtimeValue, _runtimeValue);
+        }
+
+        #endregion
+
+        #region Obsolete
+
+        [Obsolete]
         public virtual void AddRegisteredAutoListener(UnityAction<T> onChangeListener,
             UnityAction<T, T> onChangeWithHistoryListener,
             IRegisteredReferenceContainer referenceContainer,
-            IRegisteredReference<T, E, EE> reference)
+            IRegisteredReference reference)
         {
             AddListener(onChangeListener, onChangeWithHistoryListener);
             if (Registrations.ContainsKey(referenceContainer))
                 Registrations[referenceContainer].Add(reference);
             else
-                Registrations.Add(referenceContainer, new HashSet<IRegisteredReference<T, E, EE>>(){reference});
-            Debug.Log("Registration count: " + _registrations.Count);
-
+                Registrations.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
         }
 
+        [Obsolete]
         public virtual void AddUnregisteredAutoListener(UnityAction<T> onChangeListener,
             UnityAction<T, T> onChangeWithHistoryListener)
         {
             AddListener(onChangeListener, onChangeWithHistoryListener);
         }
 
+        [Obsolete]
         private void AddListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
-            _onChangeEvent.AddListener(onChangeListener);
-            _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);
+            _onValueChangedEvent.AddListener(onChangeListener);
+            _onValueChangedWithHistoryEvent.AddListener(onChangeWithHistoryListener);
         }
 
+        [Obsolete]
         public virtual void RemoveRegisteredAutoListener(
             UnityAction<T> onChangeListener,
             UnityAction<T, T> onChangeWithHistoryListener,
             IRegisteredReferenceContainer referenceContainer,
-            IRegisteredReference<T, E, EE> reference)
+            IRegisteredReference reference)
         {
             AddListener(onChangeListener, onChangeWithHistoryListener);
             if (!Registrations.ContainsKey(referenceContainer)) return;
@@ -145,28 +230,18 @@ namespace SOA.Base
                 Registrations.Remove(referenceContainer);
         }
 
+        [Obsolete]
         public virtual void RemoveUnregisteredAutoListener(UnityAction<T> onChangeListener,
             UnityAction<T, T> onChangeWithHistoryListener)
         {
             RemoveListener(onChangeListener, onChangeWithHistoryListener);
         }
 
+        [Obsolete]
         private void RemoveListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
         {
-            _onChangeEvent.AddListener(onChangeListener);
-            _onChangeWithHistoryEvent.AddListener(onChangeWithHistoryListener);
-        }
-
-        #region Forceful Methods For Event invocation 
-
-        public void ForceInvokeOnChangeEvent()
-        {
-            _onChangeEvent.Invoke(_runtimeValue);
-        }
-
-        public void ForceInvokeOnChangeWithHistoryEvent()
-        {
-            _onChangeWithHistoryEvent.Invoke(_runtimeValue, _runtimeValue);
+            _onValueChangedEvent.AddListener(onChangeListener);
+            _onValueChangedWithHistoryEvent.AddListener(onChangeWithHistoryListener);
         }
 
         #endregion

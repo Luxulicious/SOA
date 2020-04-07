@@ -33,23 +33,23 @@ namespace SOA.Common.Primitives
             set => base.Value = value;
         }
 
-        protected override void InvokeOnChangeResponses(bool currentValue)
+        protected override void InvokeOnValueChanged(bool currentValue)
         {
             if (!_invertResult)
-                base.InvokeOnChangeResponses(currentValue);
+                base.InvokeOnValueChanged(currentValue);
             else
-                base.InvokeOnChangeResponses(!currentValue);
+                base.InvokeOnValueChanged(!currentValue);
         }
 
-        protected override void InvokeOnValueChangeWithHistoryResponses(bool currentValue, bool previousValue)
+        protected override void InvokeOnValueChangedWithHistory(bool currentValue, bool previousValue)
         {
             if (!_invertResult)
-                base.InvokeOnValueChangeWithHistoryResponses(currentValue, previousValue);
+                base.InvokeOnValueChangedWithHistory(currentValue, previousValue);
             else
-                base.InvokeOnValueChangeWithHistoryResponses(!currentValue, !previousValue);
+                base.InvokeOnValueChangedWithHistory(!currentValue, !previousValue);
         }
 
-        protected void InvokeOnValueChangedToTrueResponses(bool value)
+        protected void InvokeOnValueChangedToTrueEvent(bool value)
         {
             if(!_invertResult)
                 _onValueChangedToTrueEvent.Invoke(true);
@@ -57,7 +57,7 @@ namespace SOA.Common.Primitives
                 _onValueChangedToFalseEvent.Invoke(false);
         }
 
-        protected void InvokeOnValueChangedToFalseResponses(bool value)
+        protected void InvokeOnValueChangedToFalseEvent(bool value)
         {
             if (!_invertResult)
                 _onValueChangedToFalseEvent.Invoke(false);
@@ -65,18 +65,19 @@ namespace SOA.Common.Primitives
                 _onValueChangedToTrueEvent.Invoke(true);
         }
 
-        public override void OnAfterDeserialize()
+        public override void RefreshRegistrationsToGlobalValue()
         {
-            _prevGlobalValue?.RemoveAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses, InvokeOnValueChangedToTrueResponses, InvokeOnValueChangedToFalseResponses);
-            _globalValue?.RemoveAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses, InvokeOnValueChangedToTrueResponses, InvokeOnValueChangedToFalseResponses);
-            _globalValue?.AddAutoListener(InvokeOnChangeResponses, InvokeOnValueChangeWithHistoryResponses, InvokeOnValueChangedToTrueResponses, InvokeOnValueChangedToFalseResponses);
-            _prevGlobalValue = _globalValue;
-            if (!HasRegistration())
-                Debug.LogWarning(
-                    $"No registration found for {typeof(Reference).Name} {this}. \n" +
-                    $"Please register when instancing a reference. \n" +
-                    $"This can be done manually or by using {typeof(RegisteredMonoBehaviour).Name} instead of {typeof(MonoBehaviour).Name}."
-                    , _globalValue);
+            base.RefreshRegistrationsToGlobalValue();
+            //Remove existing listeners from previous global value
+            _prevGlobalValue?.RemoveListenerFromOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
+            _prevGlobalValue?.RemoveListenerFromOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
+            //Remove existing listeners from current global value
+            _globalValue?.RemoveListenerFromOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
+            _globalValue?.RemoveListenerFromOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
+            //Add listeners to current global Value
+            _globalValue?.AddListenerToOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
+            _globalValue?.AddListenerToOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
         }
+
     }
 }

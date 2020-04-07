@@ -18,6 +18,7 @@ namespace SOA.Base
         protected static readonly string _defaultValuePropertyPath = "_defaultValue";
         protected static readonly string _runtimeValuePropertyPath = "_runtimeValue";
         protected static readonly string _foldOutOnChangeEventsPropertyPath = "_foldOutOnChangeEvents";
+        protected static readonly string _foldOutUsesPropertyPath = "_foldOutUses";
 
         public override void OnInspectorGUI()
         {
@@ -97,13 +98,13 @@ namespace SOA.Base
                     EditorGUI.EndDisabledGroup();
                 }
 
-                var foldOutOnChangedEvents = serializedObject.FindProperty(_foldOutOnChangeEventsPropertyPath);
-                foldOutOnChangedEvents.boolValue =
-                    EditorGUILayout.Foldout(foldOutOnChangedEvents.boolValue, "On Change Events");
-                if (foldOutOnChangedEvents.boolValue)
+                var foldOutOnValueChangedEvents = serializedObject.FindProperty(_foldOutOnChangeEventsPropertyPath);
+                foldOutOnValueChangedEvents.boolValue =
+                    EditorGUILayout.Foldout(foldOutOnValueChangedEvents.boolValue, "On Change Events");
+                if (foldOutOnValueChangedEvents.boolValue)
                 {
-                    var onChangedEventProperty = serializedObject.FindProperty("_onChangeEvent");
-                    var onChangedWithHistoryEventProperty = serializedObject.FindProperty("_onChangeWithHistoryEvent");
+                    var onChangedEventProperty = serializedObject.FindProperty("_onValueChangedEvent");
+                    var onChangedWithHistoryEventProperty = serializedObject.FindProperty("_onValueChangedWithHistoryEvent");
                     DrawOnChangeEventsPropertyFields(onChangedEventProperty, onChangedWithHistoryEventProperty);
 
                     EditorGUI.BeginDisabledGroup(!isPlaying);
@@ -113,53 +114,56 @@ namespace SOA.Base
                 }
             }
 
+            PostOnChangedEvents();
+
             //TODO Draw references form
             DrawUses();
-
-            PostOnInspectorGUI();
 
             serializedObject.ApplyModifiedProperties();
         }
 
-        public virtual void DrawUses()
+        protected virtual void DrawUses()
         {
             //TODO Replace with serialized property
-            var referencesFoldOut = true;
-            if (EditorGUILayout.Foldout(referencesFoldOut, "Uses"))
+            var foldOutUsesProperty = serializedObject.FindProperty(_foldOutUsesPropertyPath);
+            foldOutUsesProperty.boolValue = EditorGUILayout.Foldout(foldOutUsesProperty.boolValue, "Uses");
+            if (foldOutUsesProperty.boolValue)
             {
                 EditorGUI.indentLevel += 1;
 
-                //TODO Replace with serialized property
-                var sceneReferencesFoldOut = true;
-                if (EditorGUILayout.Foldout(sceneReferencesFoldOut, "Scene"))
+                if (GUILayout.Button("Refresh"))
                 {
-                    if (GUILayout.Button("Refresh")) throw new NotImplementedException();
-
-                    var variable = (serializedObject.targetObject as Variable<T, E, EE>);
-                    var registrations = variable?.Registrations;
-                    if (registrations != null)
-                        foreach (var reg in registrations)
-                        {
-                            EditorGUILayout.BeginHorizontal();
-                            EditorGUILayout.LabelField(reg.Key.Name);
-                            if (GUILayout.Button("Ping"))
-                            {
-                                reg.Value.First().Ping();
-                            }
-
-                            if (GUILayout.Button("Select"))
-                            {
-                                reg.Value.First().Select();
-                            }
-                            EditorGUILayout.EndHorizontal();
-                        }
+                    var registeredReferenceContainers =
+                        FindObjectsOfType<MonoBehaviour>().OfType<IRegisteredReferenceContainer>();
+                    foreach (var registeredReferenceContainer in registeredReferenceContainers)
+                        registeredReferenceContainer.Register();
                 }
 
-                //TODO Replace with serialized property
-                var folderReferencesFoldOut = true;
-                if (EditorGUILayout.Foldout(folderReferencesFoldOut, "Folder"))
-                    EditorGUILayout.LabelField("Test Folder");
+                var variable = (serializedObject.targetObject as Variable<T, E, EE>);
+                var registrations = variable?.Registrations;
+                //TODO Add References from events as well...
+                var referencedObjects = registrations?.Keys.Select(x => x as UnityEngine.Object);
 
+                if (referencedObjects != null)
+                    foreach (var referencedObject in referencedObjects)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUILayout.ObjectField("", referencedObject,
+                            typeof(UnityEngine.Object), true);
+                        EditorGUI.EndDisabledGroup();
+                        if (GUILayout.Button("Ping"))
+                        {
+                            EditorGUIUtility.PingObject(referencedObject);
+                        }
+
+                        if (GUILayout.Button("Select"))
+                        {
+                            Selection.activeObject = referencedObject;
+                        }
+
+                        EditorGUILayout.EndHorizontal();
+                    }
                 EditorGUI.indentLevel -= 1;
             }
 
@@ -221,7 +225,7 @@ namespace SOA.Base
         /// <summary>
         /// Override this to run code post-OnInspectorGUI()
         /// </summary>
-        protected virtual void PostOnInspectorGUI()
+        protected virtual void PostOnChangedEvents()
         {
             return;
         }
