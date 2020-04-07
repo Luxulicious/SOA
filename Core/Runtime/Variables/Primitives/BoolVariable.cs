@@ -173,12 +173,14 @@ namespace SOA.Common.Primitives
             else InvokeOnChangedToFalseEvent();
         }
 
-        public void OnBeforeSerialize()
+        public override void OnBeforeSerialize()
         {
+            base.OnBeforeSerialize();
         }
 
-        public void OnAfterDeserialize()
+        public override void OnAfterDeserialize()
         {
+            base.OnAfterDeserialize();
             if (!_composite) return;
             Register();
             try
