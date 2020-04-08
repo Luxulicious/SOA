@@ -11,8 +11,8 @@ namespace SOA.Common.Primitives
     public class BoolVariable : Variable<bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver,
         IRegisteredReferenceContainer
     {
-        [SerializeField] private BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
-        [SerializeField] private BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
+        [SerializeField] protected BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
+        [SerializeField] protected BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
 
         [SerializeField] [Tooltip("Value will be based on a composite of one or more referenced variables")]
         private bool _composite = false;
