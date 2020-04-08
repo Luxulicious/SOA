@@ -10,7 +10,11 @@ namespace SOA.Common.Primitives
         public IntReference()
         {
         }
-        
+
+        public IntReference(int value) : base(value)
+        {
+        }
+
         public IntReference(IRegisteredReferenceContainer registration) : base(registration)
         {
         }

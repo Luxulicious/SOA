@@ -8,6 +8,10 @@ namespace SOA.Common.UnityEngine
     [Serializable]
     public class LayerMaskReference : Reference<LayerMaskVariable, LayerMask, LayerMaskUnityEvent, LayerMaskLayerMaskUnityEvent>
     {
+        public LayerMaskReference()
+        {
+        }
+
         public LayerMaskReference(IRegisteredReferenceContainer registration) : base(registration)
         {
         }

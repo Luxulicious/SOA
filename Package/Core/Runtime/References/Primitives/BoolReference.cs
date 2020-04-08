@@ -19,6 +19,10 @@ namespace SOA.Common.Primitives
         //TODO Make this collapsible
         private bool _invertResult = false;
 
+        public BoolReference()
+        {
+        }
+
         public BoolReference(IRegisteredReferenceContainer registration) : base(registration)
         {
         }
@@ -78,6 +82,7 @@ namespace SOA.Common.Primitives
             _globalValue?.AddListenerToOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
             _globalValue?.AddListenerToOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
         }
+
 
     }
 }
