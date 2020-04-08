@@ -101,6 +101,11 @@ namespace SOA.Common.Primitives
             }
         }
 
+        private void UpdateComposite(bool b)
+        {
+            UpdateComposite();
+        }
+
         public void UpdateComposite()
         {
             if (_composite)
