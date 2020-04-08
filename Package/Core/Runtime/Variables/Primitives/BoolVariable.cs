@@ -17,8 +17,8 @@ namespace SOA.Common.Primitives
         [SerializeField] [Tooltip("Value will be based on a composite of one or more referenced variables")]
         private bool _composite = false;
 
-        [SerializeField] private BooleanOperator _andOr;
-        [SerializeField] private List<BoolReference> _memberValues = new List<BoolReference>(1);
+        [SerializeField] protected BooleanOperator _andOr;
+        [SerializeField] protected List<BoolReference> _memberValues = new List<BoolReference>(1);
 
         public override bool Value
         {
