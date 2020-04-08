@@ -101,11 +101,18 @@ namespace SOA.Common.Primitives
             }
         }
 
+        /// <summary>
+        /// Updates the composite value according to member values
+        /// </summary>
+        /// <param name="b">This is an overload of a parameterless method of the same name this parameter does nothing</param>
         private void UpdateComposite(bool b)
         {
             UpdateComposite();
         }
 
+        /// <summary>
+        /// Updates the composite value according to member values
+        /// </summary>
         public void UpdateComposite()
         {
             if (_composite)
