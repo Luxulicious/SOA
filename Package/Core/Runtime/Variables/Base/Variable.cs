@@ -37,7 +37,7 @@ namespace SOA.Base
         [SerializeField] [HideInInspector] protected bool _foldOutUses = false;
 
         [SerializeField] [HideInInspector]
-        protected Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>> _registrations =
+        protected Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>> _uses =
             new Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>>();
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
@@ -112,8 +112,8 @@ namespace SOA.Base
         }
 
         public Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>>
-            Registrations =>
-            _registrations;
+            Uses =>
+            _uses;
 
         private void OnEnable()
         {
@@ -151,34 +151,34 @@ namespace SOA.Base
 
         #region Registration
 
-        public virtual void AddRegistration(IRegisteredReferenceContainer referenceContainer,
+        public virtual void AddUse(IRegisteredReferenceContainer referenceContainer,
             IRegisteredReference reference)
         {
-            if (Registrations.ContainsKey(referenceContainer))
-                Registrations[referenceContainer].Add(reference);
+            if (Uses.ContainsKey(referenceContainer))
+                Uses[referenceContainer].Add(reference);
             else
-                Registrations.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
+                Uses.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
 
-            CleanupRegistrations();
+            CleanupUses();
         }
 
-        public virtual void RemoveRegistration(
+        public virtual void RemoveUse(
             IRegisteredReferenceContainer referenceContainer,
             IRegisteredReference reference)
         {
-            if (!Registrations.ContainsKey(referenceContainer)) return;
-            Registrations[referenceContainer].Remove(reference);
-            if (Registrations[referenceContainer].Count < 1)
-                Registrations.Remove(referenceContainer);
+            if (!Uses.ContainsKey(referenceContainer)) return;
+            Uses[referenceContainer].Remove(reference);
+            if (Uses[referenceContainer].Count < 1)
+                Uses.Remove(referenceContainer);
 
-            CleanupRegistrations();
+            CleanupUses();
         }
 
-        private void CleanupRegistrations()
+        private void CleanupUses()
         {
             //Remove registrations that don't have any values
             var registrationsWithoutReferences = new List<IRegisteredReferenceContainer>();
-            foreach (var registration in _registrations)
+            foreach (var registration in _uses)
             {
                 if (registration.Value.Count <= 0)
                 {
@@ -187,9 +187,9 @@ namespace SOA.Base
                 }
             }
 
-            registrationsWithoutReferences.ForEach(x => _registrations.Remove(x));
+            registrationsWithoutReferences.ForEach(x => _uses.Remove(x));
             //Remove null references from registrations
-            foreach (var registration in _registrations)
+            foreach (var registration in _uses)
             {
                 registration.Value.Remove(null);
             }
@@ -202,7 +202,7 @@ namespace SOA.Base
 
         public virtual void OnAfterDeserialize()
         {
-            CleanupRegistrations();
+            CleanupUses();
         }
 
         #endregion
@@ -230,10 +230,10 @@ namespace SOA.Base
             IRegisteredReference reference)
         {
             AddListener(onChangeListener, onChangeWithHistoryListener);
-            if (Registrations.ContainsKey(referenceContainer))
-                Registrations[referenceContainer].Add(reference);
+            if (Uses.ContainsKey(referenceContainer))
+                Uses[referenceContainer].Add(reference);
             else
-                Registrations.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
+                Uses.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
         }
 
         [Obsolete]
@@ -258,10 +258,10 @@ namespace SOA.Base
             IRegisteredReference reference)
         {
             AddListener(onChangeListener, onChangeWithHistoryListener);
-            if (!Registrations.ContainsKey(referenceContainer)) return;
-            Registrations[referenceContainer].Remove(reference);
-            if (Registrations[referenceContainer].Count < 1)
-                Registrations.Remove(referenceContainer);
+            if (!Uses.ContainsKey(referenceContainer)) return;
+            Uses[referenceContainer].Remove(reference);
+            if (Uses[referenceContainer].Count < 1)
+                Uses.Remove(referenceContainer);
         }
 
         [Obsolete]

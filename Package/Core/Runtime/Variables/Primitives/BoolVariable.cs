@@ -236,7 +236,7 @@ namespace SOA.Common.Primitives
             if (!_composite) return;
             foreach (var memberValue in _memberValues)
                 if (memberValue?.Scope == Scope.Global)
-                    memberValue?.GlobalValue?.AddRegistration(this, memberValue);
+                    memberValue?.GlobalValue?.AddUse(this, memberValue);
         }
 
         [Obsolete]

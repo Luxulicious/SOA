@@ -211,9 +211,9 @@ namespace SOA.Base
             }
             else
             {
-                _prevGlobalValue?.RemoveRegistration(_registration, this);
-                _globalValue?.RemoveRegistration(_registration, this);
-                _globalValue?.AddRegistration(_registration, this);
+                _prevGlobalValue?.RemoveUse(_registration, this);
+                _globalValue?.RemoveUse(_registration, this);
+                _globalValue?.AddUse(_registration, this);
             }
         }
 
