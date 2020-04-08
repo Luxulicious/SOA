@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using JetBrains.Annotations;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -104,7 +101,8 @@ namespace SOA.Base
                 if (foldOutOnValueChangedEvents.boolValue)
                 {
                     var onChangedEventProperty = serializedObject.FindProperty("_onValueChangedEvent");
-                    var onChangedWithHistoryEventProperty = serializedObject.FindProperty("_onValueChangedWithHistoryEvent");
+                    var onChangedWithHistoryEventProperty =
+                        serializedObject.FindProperty("_onValueChangedWithHistoryEvent");
                     DrawOnChangeEventsPropertyFields(onChangedEventProperty, onChangedWithHistoryEventProperty);
 
                     EditorGUI.BeginDisabledGroup(!isPlaying);
@@ -131,6 +129,8 @@ namespace SOA.Base
             {
                 EditorGUI.indentLevel += 1;
 
+                /*
+                EditorGUI.BeginDisabledGroup(true);
                 if (GUILayout.Button("Refresh"))
                 {
                     var registeredReferenceContainers =
@@ -138,36 +138,45 @@ namespace SOA.Base
                     foreach (var registeredReferenceContainer in registeredReferenceContainers)
                         registeredReferenceContainer.Register();
                 }
+                EditorGUI.EndDisabledGroup();
+                */
 
-                var variable = (serializedObject.targetObject as Variable<T, E, EE>);
-                var registrations = variable?.Registrations;
+                //Get target variable
+                var variable = serializedObject.targetObject as Variable<T, E, EE>;
+                //Get registrations
                 //TODO Add References from events as well...
-                var referencedObjects = registrations?.Keys.Select(x => x as UnityEngine.Object);
-
-                if (referencedObjects != null)
-                    foreach (var referencedObject in referencedObjects)
+                var registrations = variable?.Registrations;
+                //Get registered referenced containers as UnityEngine.Object
+                var registeredReferenceContainers = registrations?.Keys.Select(x => x as Object);
+                //Filter out any null references just in case
+                registeredReferenceContainers = registeredReferenceContainers?.Where(x => x != null);
+                //Removed prefabs TODO add these back in a different category
+                //TODO Also maybe separate scriptable objects as well
+                var newRegisteredReferenceContainers = registeredReferenceContainers?.Where(x =>
+                    x is GameObject gameObject && gameObject.scene.isLoaded ||
+                    x is ScriptableObject ||
+                    x is Component component && component.gameObject.scene.isLoaded
+                );
+                //Order alphabetically
+                newRegisteredReferenceContainers = newRegisteredReferenceContainers?.OrderBy(x => x?.name);
+                //Draw the uses
+                if (newRegisteredReferenceContainers != null)
+                    foreach (var referencedObject in newRegisteredReferenceContainers)
                     {
                         EditorGUILayout.BeginHorizontal();
                         EditorGUI.BeginDisabledGroup(true);
                         EditorGUILayout.ObjectField("", referencedObject,
-                            typeof(UnityEngine.Object), true);
+                            typeof(Object), true);
                         EditorGUI.EndDisabledGroup();
-                        if (GUILayout.Button("Ping"))
-                        {
-                            EditorGUIUtility.PingObject(referencedObject);
-                        }
+                        if (GUILayout.Button("Ping")) EditorGUIUtility.PingObject(referencedObject);
 
-                        if (GUILayout.Button("Select"))
-                        {
-                            Selection.activeObject = referencedObject;
-                        }
-
+                        if (GUILayout.Button("Select")) Selection.activeObject = referencedObject;
                         EditorGUILayout.EndHorizontal();
                     }
+
                 EditorGUI.indentLevel -= 1;
             }
 
-            //throw new NotImplementedException();
         }
 
         protected virtual void DrawInvokeOnChangeEventsButtons(V variable)
