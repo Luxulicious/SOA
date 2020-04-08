@@ -13,6 +13,7 @@ namespace SOA.Common.Primitives
         protected static readonly string _onValueChangedToFalseEventPropertyPath = "_onValueChangedToFalseEvent";
         protected static readonly string _andOrPropertyPath = "_andOr";
         protected static readonly string _memberValuesPropertyPath = "_memberValues";
+        protected static readonly string _compositeValuePropertyPath = "_compositeValue";
 
         protected override void DrawPersistencePropertyField(SerializedProperty useAsConstantProperty)
         {
@@ -76,7 +77,20 @@ namespace SOA.Common.Primitives
             if (!compositeValue)
                 base.DrawRuntimeValuePropertyField(runtimeValueProperty, label);
             else
-                base.DrawRuntimeValuePropertyField(runtimeValueProperty, "Composite Value");
+            {
+                var compositeValueProperty = serializedObject.FindProperty(_compositeValuePropertyPath);
+                if (Application.isPlaying)
+                {
+                    EditorGUILayout.PropertyField(compositeValueProperty);
+                }
+                else
+                {
+                    EditorGUI.BeginDisabledGroup(true);
+                    EditorGUILayout.Toggle($"{compositeValueProperty.displayName} (Runtime only)", false);
+
+                    EditorGUI.EndDisabledGroup();
+                }
+            }
         }
     }
 }
