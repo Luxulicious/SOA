@@ -201,7 +201,7 @@ namespace SOA.Common.Primitives
             }
             catch (CompositeException e)
             {
-                Debug.LogWarning(e.Message);
+                Debug.LogError(e.Message, this);
             }
 
             SetAllReferencesToGlobalScope();
