@@ -16,10 +16,11 @@ MonoBehaviour:
   _runtimeValue: 1
   _persistence: 0
   _foldOutOnChangeEvents: 0
-  _onChangeEvent:
+  _foldOutUses: 1
+  _onValueChangedEvent:
     m_PersistentCalls:
       m_Calls: []
-  _onChangeWithHistoryEvent:
+  _onValueChangedWithHistoryEvent:
     m_PersistentCalls:
       m_Calls: []
   _onValueChangedToTrueEvent:
@@ -29,7 +30,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   _composite: 1
-  _andOr: 0
+  _andOr: 1
   _memberValues:
   - _scope: 1
     _persistence: 0
@@ -41,8 +42,28 @@ MonoBehaviour:
     _onValueChangedWithHistoryEvent:
       m_PersistentCalls:
         m_Calls: []
-    _foldout: 0
+    _foldout: 1
     _prevGlobalValue: {fileID: 11400000, guid: 3484d972abdca654394e95ef7f851e72, type: 2}
+    _foldoutEvents: 0
+    _onValueChangedToTrueEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedToFalseEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _invertResult: 0
+  - _scope: 1
+    _persistence: 0
+    _localValue: 0
+    _globalValue: {fileID: 11400000, guid: 499e3794a31c5a94fb8835dbc26bd0ab, type: 2}
+    _onValueChangedEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedWithHistoryEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _foldout: 1
+    _prevGlobalValue: {fileID: 11400000, guid: 499e3794a31c5a94fb8835dbc26bd0ab, type: 2}
     _foldoutEvents: 0
     _onValueChangedToTrueEvent:
       m_PersistentCalls:
