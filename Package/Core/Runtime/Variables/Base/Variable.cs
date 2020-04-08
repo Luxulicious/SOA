@@ -125,7 +125,6 @@ namespace SOA.Base
             _runtimeValue = _defaultValue;
         }
 
-
         #region Listeners
 
         public virtual void AddListenerToOnChange(UnityAction<T> action)
@@ -187,7 +186,8 @@ namespace SOA.Base
                     continue;
                 }
             }
-            registrationsWithoutReferences.ForEach(x => registrationsWithoutReferences.Remove(x));
+
+            registrationsWithoutReferences.ForEach(x => _registrations.Remove(x));
             //Remove null references from registrations
             foreach (var registration in _registrations)
             {
@@ -279,7 +279,5 @@ namespace SOA.Base
         }
 
         #endregion
-
-        
     }
 }
