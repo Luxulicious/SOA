@@ -145,7 +145,7 @@ namespace SOA.Base
                 var variable = serializedObject.targetObject as Variable<T, E, EE>;
                 //Get registrations
                 //TODO Add References from events as well...
-                var registrations = variable?.Registrations;
+                var registrations = variable?.Uses;
                 //Get registered referenced containers as UnityEngine.Object
                 var registeredReferenceContainers = registrations?.Keys.Select(x => x as Object);
                 //Filter out any null references just in case
