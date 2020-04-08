@@ -1,38 +1,55 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Schema;
+using JetBrains.Annotations;
 using SOA.Base;
+using SOA.Common.Primitives;
+using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Events;
+using Scope = SOA.Base.Scope;
 
 namespace SOA.Common.Primitives
 {
+    //TODO This class has become rather big and should probably be split up into partial classes. Use the given regions for this.
     [CreateAssetMenu(fileName = "New Bool Variable", menuName = "SOA/Primitives/Bool/Variable", order = 1)]
     public class BoolVariable : Variable<bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver,
         IRegisteredReferenceContainer
     {
         [SerializeField] protected BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
         [SerializeField] protected BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
+        [SerializeField] protected UnityEvent _onAfterDeserializedEvent = new UnityEvent();
+
+        #region Composite fields
 
         [SerializeField] [Tooltip("Value will be based on a composite of one or more referenced variables")]
-        private bool _composite = false;
+        protected bool _composite = false;
 
+        [SerializeField] protected bool _compositeValue;
         [SerializeField] protected BooleanOperator _andOr;
+
+        [SerializeField] [HideInInspector] protected List<BoolReference> _prevMemberValues = new List<BoolReference>();
+
+        //TODO Should ideally be a hashset to avoid duplicates, but unity serialization issues...
         [SerializeField] protected List<BoolReference> _memberValues = new List<BoolReference>(1);
+
+        #endregion
+
+        #region Overriden variable methods
 
         public override bool Value
         {
             get
             {
-                if (_composite) UpdateComposite();
-
+                if (_composite) return CompositeValue;
                 return base.Value;
             }
             set
             {
                 if (_composite)
                 {
-                    UpdateComposite();
+                    UpdateCompositeValue();
                     throw new CompositeException(
                         $"Setting the value directly of type {GetType().Name} is impossible. Use member values instead.");
                 }
@@ -49,7 +66,7 @@ namespace SOA.Common.Primitives
             {
                 if (_composite)
                     throw new CompositeException(
-                        $"The default value of {GetType().Name} is not used in a static context.");
+                        $"The default value of {GetType().Name} is not used in a composite context.");
                 else
                     return base.DefaultValue;
             }
@@ -69,9 +86,22 @@ namespace SOA.Common.Primitives
             {
                 if (_composite)
                 {
-                    Debug.LogWarning($"{typeof(Persistence).Name} of type {GetType().Name} is always variable");
-                    if (_persistence == Persistence.Constant)
-                        _persistence = Persistence.Variable;
+                    switch (_persistence)
+                    {
+                        case Persistence.Constant:
+                            Debug.LogWarning($"{typeof(Persistence).Name} of type {GetType().Name} is always variable",
+                                this);
+                            _persistence = Persistence.Variable;
+                            break;
+                        case Persistence.Variable:
+                            break;
+                        default:
+                            Debug.LogWarning($"{typeof(Persistence).Name} of type {GetType().Name} is always variable",
+                                this);
+                            _persistence = Persistence.Variable;
+                            break;
+                    }
+
                     return _persistence;
                 }
                 else
@@ -85,7 +115,7 @@ namespace SOA.Common.Primitives
                 {
                     if (value == Persistence.Variable)
                     {
-                        Debug.LogWarning($"{typeof(Persistence).Name} of type {GetType().Name} is always variable");
+                        Debug.LogError($"{typeof(Persistence).Name} of type {GetType().Name} is always variable", this);
                         _persistence = Persistence.Variable;
                     }
                     else
@@ -101,174 +131,254 @@ namespace SOA.Common.Primitives
             }
         }
 
-        /// <summary>
-        /// Updates the composite value according to member values
-        /// </summary>
-        /// <param name="b">This is an overload of a parameterless method of the same name this parameter does nothing</param>
-        private void UpdateComposite(bool b)
-        {
-            UpdateComposite();
-        }
-
-        /// <summary>
-        /// Updates the composite value according to member values
-        /// </summary>
-        public void UpdateComposite()
-        {
-            if (_composite)
-            {
-                if (_memberValues.Count > 0 && _memberValues.Count(x => x == null) != _memberValues.Count)
-                {
-                    bool result;
-                    switch (_andOr)
-                    {
-                        case BooleanOperator.And:
-                            result = true;
-                            foreach (var x in _memberValues)
-                            {
-                                if (x.HasValue)
-                                {
-                                    Debug.LogWarning("Not all composite members are filled in yet");
-                                    continue;
-                                }
-
-                                if (!x.Value)
-                                {
-                                    result = false;
-                                    break;
-                                }
-                            }
-
-                            break;
-                        case BooleanOperator.Or:
-                            result = false;
-                            foreach (var x in _memberValues)
-                            {
-                                if (x.HasValue)
-                                {
-                                    Debug.LogWarning("Not all composite members are filled in yet");
-                                    continue;
-                                }
-
-                                if (x.Value)
-                                {
-                                    result = true;
-                                    break;
-                                }
-                            }
-
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
-
-                    base.Value = result;
-                }
-                else
-                {
-                    throw new CompositeException(
-                        $"At least 1 member value needs to exist when using composite");
-                }
-            }
-            else
-            {
-                throw new CompositeException(
-                    $"Value is not set to composite");
-            }
-        }
-
-        protected override void InvokeOnChangeEvents(bool prevValue, bool value)
-        {
-            base.InvokeOnChangeEvents(prevValue, value);
-            if (prevValue == value) return;
-            if (value) InvokeOnChangedToTrueEvent();
-            else InvokeOnChangedToFalseEvent();
-        }
-
-        public override void OnBeforeSerialize()
-        {
-            base.OnBeforeSerialize();
-        }
-
         public override void OnAfterDeserialize()
         {
             base.OnAfterDeserialize();
+            _onAfterDeserializedEvent.Invoke();
             if (!_composite) return;
+            //Register as a container
             Register();
+            //Refresh connections to member values for when to update the composite
+            _prevMemberValues.ForEach(x =>
+            {
+                x.RemoveListenerFromOnValueChanged(UpdateCompositeValue);
+                x.GlobalValue.RemoveListenerFromOnAfterDeserializedEvent(UpdateCompositeValue);
+            });
+            _memberValues.ForEach(x =>
+            {
+                x.RemoveListenerFromOnValueChanged(UpdateCompositeValue);
+                x.GlobalValue.RemoveListenerFromOnAfterDeserializedEvent(UpdateCompositeValue);
+            });
+            _memberValues.ForEach(x =>
+            {
+                x.AddListenerToOnValueChanged(UpdateCompositeValue);
+                x.GlobalValue.AddListenerToOnAfterDeserializedEvent(UpdateCompositeValue);
+            });
+            _prevMemberValues = _memberValues;
             try
             {
-                UpdateComposite();
+                UpdateCompositeValue();
             }
             catch (CompositeException e)
             {
                 Debug.LogError(e.Message, this);
             }
-
-            SetAllReferencesToGlobalScope();
         }
 
-        private void SetAllReferencesToGlobalScope()
+        #endregion
+
+        #region Composite methods
+
+        public bool CompositeValue
         {
-            if (!_memberValues.Any()) return;
-            foreach (var reference in _memberValues.Where(x => x.Scope == Scope.Local)) reference.Scope = Scope.Global;
+            get
+            {
+                if (!_composite)
+                    throw new CompositeException(
+                        $"Cannot get composite value, {typeof(BoolVariable)} {name} was not set to composite.");
+                UpdateCompositeValue();
+                return _compositeValue;
+            }
         }
 
-        public void InvokeOnChangedToFalseEvent()
+        //TODO Replace this by converting the UnityAction<bool> to UnityAction somehow
+        /// <summary>
+        /// Updates the composite value according to member values
+        /// </summary>
+        /// <param name="b">This is an overload of a parameterless method of the same name, this parameter does nothing.</param>
+        private void UpdateCompositeValue(bool b)
+        {
+            UpdateCompositeValue();
+        }
+
+        /// <summary>
+        /// Updates the composite value according to member values
+        /// </summary>
+        public void UpdateCompositeValue()
+        {
+            try
+            {
+                if (!ValidateComposite()) return;
+            }
+            catch (CompositeException e)
+            {
+                Debug.LogError(e.Message, this);
+                return;
+            }
+
+            var prev = _compositeValue;
+            var result = false;
+            result = CalculateCompositeValue();
+            _compositeValue = result;
+
+            try
+            {
+                if (Application.isPlaying)
+                    if (prev != _compositeValue)
+                    {
+                        base.InvokeOnValueChangedEvents(_compositeValue, prev);
+                        if (!_compositeValue)
+                            _onValueChangedToFalseEvent.Invoke(false);
+                        else _onValueChangedToTrueEvent.Invoke(true);
+                    }
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e.Message, this);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Calculates the composite value based of member values
+        /// </summary>
+        /// <returns></returns>
+        private bool CalculateCompositeValue()
+        {
+            bool result;
+            if (_memberValues.Count == 1)
+                result = _memberValues.First().Value;
+            else if (_memberValues.Count > 1)
+                switch (_andOr)
+                {
+                    case BooleanOperator.And:
+                        result = true;
+                        foreach (var x in _memberValues)
+                        {
+                            if (x.Value) continue;
+                            result = false;
+                            break;
+                        }
+
+                        break;
+                    case BooleanOperator.Or:
+                        result = false;
+                        foreach (var x in _memberValues)
+                        {
+                            if (!x.Value) continue;
+                            result = true;
+                            break;
+                        }
+
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            else
+                throw new CompositeException("Could not determine composite value. " +
+                                             "Failed to calculate composite result.");
+
+            return result;
+        }
+
+        private bool ValidateComposite()
+        {
+            //If variable not set to composite throw an exception
+            if (!_composite)
+                throw new CompositeException($"Could not determine composite value. " +
+                                             $"Variable is not set to composite");
+            //Check if null member values exist in list
+            _memberValues.RemoveAll(x => x == null);
+            //Allow only unique member values
+            _memberValues = _memberValues.Distinct().ToList();
+            //If there are no member values throw an exception
+            if (_memberValues.Count <= 0)
+                throw new CompositeException("Could not determine composite value. " +
+                                             "Composite does not have any member values.");
+            //Set all member values to global scope
+            if (_memberValues.Any(x => x.Scope != Scope.Global))
+            {
+                foreach (var reference in _memberValues.Where(x => x.Scope == Scope.Local)) reference.Scope = Scope.Global;
+                throw new CompositeException("Could not determine composite value. " +
+                                             "Member values can only be of global scope. " +
+                                             "Member values have now been set to global scope.");
+            }
+
+            if (_memberValues.Any(x => x.GlobalValue == null))
+                throw new CompositeException("Could not determine composite value. " +
+                                             "There are member values without a reference to a variable.");
+            return true;
+        }
+
+        #endregion
+
+        #region Events
+
+        #region Invocation
+
+        protected override void InvokeOnValueChangedEvents(bool value, bool prevValue)
+        {
+            if (!_composite)
+            {
+                base.InvokeOnValueChangedEvents(value, prevValue);
+                if (prevValue == value) return;
+                if (value) InvokeOnValueChangedToTrueEvent();
+                else InvokeOnValueChangedToFalseEvent();
+            }
+            else
+                //TODO
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        public void InvokeOnValueChangedToFalseEvent()
         {
             _onValueChangedToFalseEvent.Invoke(false);
         }
 
-        public void InvokeOnChangedToTrueEvent()
+        public void InvokeOnValueChangedToTrueEvent()
         {
             _onValueChangedToTrueEvent.Invoke(true);
         }
 
-        public void AddListenerToOnChangeToTrueEvent(UnityAction<bool> action)
+        #endregion
+
+        #region Listeners
+
+        public void AddListenerToOnValueChangedToTrueEvent(UnityAction<bool> action)
         {
             _onValueChangedToTrueEvent.AddListener(action);
         }
 
-        public void AddListenerToOnChangeToFalseEvent(UnityAction<bool> action)
+        public void AddListenerToOnValueChangedToFalseEvent(UnityAction<bool> action)
         {
             _onValueChangedToFalseEvent.AddListener(action);
         }
 
-        public void RemoveListenerFromOnChangeToTrueEvent(UnityAction<bool> action)
+        public void RemoveListenerFromOnValueChangedToTrueEvent(UnityAction<bool> action)
         {
             _onValueChangedToTrueEvent.RemoveListener(action);
         }
 
-        public void RemoveListenerFromOnChangeToFalseEvent(UnityAction<bool> action)
+        public void RemoveListenerFromOnChangedToFalseEvent(UnityAction<bool> action)
         {
             _onValueChangedToFalseEvent.RemoveListener(action);
         }
 
+        public void AddListenerToOnAfterDeserializedEvent(UnityAction action)
+        {
+            _onAfterDeserializedEvent.AddListener(action);
+        }
+
+        public void RemoveListenerFromOnAfterDeserializedEvent(UnityAction action)
+        {
+            _onAfterDeserializedEvent.RemoveListener(action);
+        }
+
+        #endregion
+
+        #endregion
+
+        /// <summary>
+        /// If composite register this as a use for the composite member values
+        /// </summary>
         public void Register()
         {
             if (!_composite) return;
             foreach (var memberValue in _memberValues)
                 if (memberValue?.Scope == Scope.Global)
                     memberValue?.GlobalValue?.AddUse(this, memberValue);
-        }
-
-        [Obsolete]
-        public void AddAutoListener(UnityAction<bool> onChangeListener,
-            UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
-            UnityAction<bool> onValueChangedToFalseEventListener)
-        {
-            base.AddUnregisteredAutoListener(onChangeListener, onChangeWithHistoryListener);
-            _onValueChangedToTrueEvent.AddListener(onValueChangedToTrueEventListener);
-            _onValueChangedToFalseEvent.AddListener(onValueChangedToFalseEventListener);
-        }
-
-        [Obsolete]
-        public void RemoveAutoListener(UnityAction<bool> onChangeListener,
-            UnityAction<bool, bool> onChangeWithHistoryListener, UnityAction<bool> onValueChangedToTrueEventListener,
-            UnityAction<bool> onValueChangedToFalseEventListener)
-        {
-            base.RemoveUnregisteredAutoListener(onChangeListener, onChangeWithHistoryListener);
-            _onValueChangedToTrueEvent.RemoveListener(onValueChangedToTrueEventListener);
-            _onValueChangedToFalseEvent.RemoveListener(onValueChangedToFalseEventListener);
         }
     }
 
