@@ -35,8 +35,8 @@ namespace SOA.Common.Primitives
         {
             base.DrawInvokeOnChangeEventsButtons(variable);
             EditorGUI.BeginDisabledGroup(!Application.isPlaying);
-            if (GUILayout.Button("Invoke On Changed To True Event")) variable.InvokeOnChangedToTrueEvent();
-            if (GUILayout.Button("Invoke On Changed To False Event")) variable.InvokeOnChangedToFalseEvent();
+            if (GUILayout.Button("Invoke On Changed To True Event")) variable.InvokeOnValueChangedToTrueEvent();
+            if (GUILayout.Button("Invoke On Changed To False Event")) variable.InvokeOnValueChangedToFalseEvent();
             EditorGUI.EndDisabledGroup();
         }
 

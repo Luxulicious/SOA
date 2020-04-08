@@ -73,14 +73,14 @@ namespace SOA.Common.Primitives
         {
             base.RefreshRegistrationsToGlobalValue();
             //Remove existing listeners from previous global value
-            _prevGlobalValue?.RemoveListenerFromOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
-            _prevGlobalValue?.RemoveListenerFromOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
+            _prevGlobalValue?.RemoveListenerFromOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
+            _prevGlobalValue?.RemoveListenerFromOnChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
             //Remove existing listeners from current global value
-            _globalValue?.RemoveListenerFromOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
-            _globalValue?.RemoveListenerFromOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
+            _globalValue?.RemoveListenerFromOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
+            _globalValue?.RemoveListenerFromOnChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
             //Add listeners to current global Value
-            _globalValue?.AddListenerToOnChangeToTrueEvent(InvokeOnValueChangedToTrueEvent);
-            _globalValue?.AddListenerToOnChangeToFalseEvent(InvokeOnValueChangedToFalseEvent);
+            _globalValue?.AddListenerToOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
+            _globalValue?.AddListenerToOnValueChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
         }
 
 
