@@ -222,9 +222,11 @@ namespace SOA.Common.Primitives
                         else _onValueChangedToTrueEvent.Invoke(true);
                     }
             }
-            catch (Exception e)
+            catch (UnityException e)
             {
-                Debug.LogError(e.Message, this);
+                if (e.Message.Contains(
+                    "get_isPlaying is not allowed to be called during serialization, call it from OnEnable instead."))
+                    return;
                 throw;
             }
         }
@@ -288,7 +290,8 @@ namespace SOA.Common.Primitives
             //Set all member values to global scope
             if (_memberValues.Any(x => x.Scope != Scope.Global))
             {
-                foreach (var reference in _memberValues.Where(x => x.Scope == Scope.Local)) reference.Scope = Scope.Global;
+                foreach (var reference in _memberValues.Where(x => x.Scope == Scope.Local))
+                    reference.Scope = Scope.Global;
                 throw new CompositeException("Could not determine composite value. " +
                                              "Member values can only be of global scope. " +
                                              "Member values have now been set to global scope.");
