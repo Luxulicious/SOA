@@ -81,7 +81,7 @@ namespace SOA.Base
                             return;
                         }
 
-                        InvokeOnChangeEvents(prevValue, _runtimeValue);
+                        InvokeOnValueChangedEvents(_runtimeValue, prevValue);
                         break;
                     }
 
@@ -94,7 +94,7 @@ namespace SOA.Base
             }
         }
 
-        protected virtual void InvokeOnChangeEvents(T prev, T value)
+        protected virtual void InvokeOnValueChangedEvents(T value, T prev)
         {
             _onValueChangedEvent.Invoke(value);
             _onValueChangedWithHistoryEvent.Invoke(value, prev);
