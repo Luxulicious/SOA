@@ -79,7 +79,6 @@ namespace SOA.Base
             _scope = Scope.Local;
         }
 
-
         protected virtual void InvokeOnValueChanged(T currentValue)
         {
             _onValueChangedEvent?.Invoke(currentValue);
