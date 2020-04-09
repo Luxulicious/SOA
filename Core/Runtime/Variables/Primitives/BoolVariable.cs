@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Schema;
-using JetBrains.Annotations;
 using SOA.Base;
-using SOA.Common.Primitives;
-using UnityEditor.Experimental.GraphView;
 using UnityEngine;
 using UnityEngine.Events;
 using Scope = SOA.Base.Scope;
@@ -14,8 +10,7 @@ namespace SOA.Common.Primitives
 {
     //TODO This class has become rather big and should probably be split up into partial classes. Use the given regions for this.
     [CreateAssetMenu(fileName = "New Bool Variable", menuName = "SOA/Primitives/Bool/Variable", order = 1)]
-    public class BoolVariable : Variable<bool, BoolUnityEvent, BoolBoolUnityEvent>, ISerializationCallbackReceiver,
-        IRegisteredReferenceContainer
+    public class BoolVariable : Variable<bool, BoolUnityEvent, BoolBoolUnityEvent>, IRegisteredReferenceContainer
     {
         [SerializeField] protected BoolUnityEvent _onValueChangedToTrueEvent = new BoolUnityEvent();
         [SerializeField] protected BoolUnityEvent _onValueChangedToFalseEvent = new BoolUnityEvent();
@@ -70,6 +65,7 @@ namespace SOA.Common.Primitives
                 else
                     return base.DefaultValue;
             }
+#if UNITY_EDITOR
             set
             {
                 if (_composite)
@@ -78,6 +74,7 @@ namespace SOA.Common.Primitives
                 else
                     base.DefaultValue = value;
             }
+#endif
         }
 
         public override Persistence Persistence
@@ -217,9 +214,17 @@ namespace SOA.Common.Primitives
             result = CalculateCompositeValue();
             _compositeValue = result;
 
+            var applicationIsPlaying = false;
             try
             {
-                if (Application.isPlaying)
+                applicationIsPlaying = Application.isPlaying;
+            }
+            catch (UnityException)
+            {
+                return;
+            }
+
+            if (Application.isPlaying)
                     if (prev != _compositeValue)
                     {
                         base.InvokeOnValueChangedEvents(_compositeValue, prev);
@@ -227,14 +232,8 @@ namespace SOA.Common.Primitives
                             _onValueChangedToFalseEvent.Invoke(false);
                         else _onValueChangedToTrueEvent.Invoke(true);
                     }
-            }
-            catch (UnityException e)
-            {
-                if (e.Message.Contains(
-                    "get_isPlaying is not allowed to be called during serialization, call it from OnEnable instead."))
-                    return;
-                throw;
-            }
+            
+            
         }
 
         /// <summary>
