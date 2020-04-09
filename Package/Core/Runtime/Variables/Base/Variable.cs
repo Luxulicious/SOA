@@ -20,7 +20,7 @@ namespace SOA.Base
 
         public virtual void OnBeforeSerialize()
         {
-            //Do nothing
+            Register();
         }
 
         public abstract void Register();
