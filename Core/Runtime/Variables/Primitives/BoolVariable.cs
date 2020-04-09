@@ -165,6 +165,12 @@ namespace SOA.Common.Primitives
             }
         }
 
+        public override void OnBeforeSerialize()
+        {
+            base.OnBeforeSerialize();
+            Register();
+        }
+
         #endregion
 
         #region Composite methods
