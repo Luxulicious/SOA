@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
@@ -260,7 +262,10 @@ namespace SOA.Base
                 case Persistence.Constant:
                     break;
                 case Persistence.Variable:
-                    DrawOnValueChangedEventsFoldout(valueRect, property);
+                    if (!HideOnValueChangedEvents(property))
+                    {
+                        DrawOnValueChangedEventsFoldout(valueRect, property);
+                    }
                     //Throw warning if reference is referencing a constant while referring to it as a variable
                     if (globalValueProperty.objectReferenceValue != null && scope == Scope.Global)
                         if (((V) globalValueProperty.objectReferenceValue).Persistence == Persistence.Constant)
@@ -277,6 +282,11 @@ namespace SOA.Base
             }
 
             #endregion
+        }
+
+        protected virtual bool HideOnValueChangedEvents(SerializedProperty property)
+        {
+            return property.HasAttribute<HideOnValueChangedEventsAttribute>();
         }
 
         protected virtual Rect DrawValueFields(SerializedProperty property, Rect usageRect)
@@ -354,10 +364,18 @@ namespace SOA.Base
             );
 
             //Draw usage section
+            var disablePersistence = DisablePersistence(property);
+            EditorGUI.BeginDisabledGroup(disablePersistence);
             EditorGUI.PropertyField(firstHalfSplitUsageRect, scopeProperty, GUIContent.none, true);
+            EditorGUI.EndDisabledGroup();
             EditorGUI.PropertyField(secondHalfSplitUsageRect, persistenceProperty, GUIContent.none, true);
 
             return usageRect;
+        }
+
+        protected virtual bool DisablePersistence(SerializedProperty property)
+        {
+            return property.HasAttribute<DisablePersistence>();
         }
 
         protected virtual Rect DrawValuePropertyField(SerializedProperty valueProperty, Rect usageRect)
@@ -382,7 +400,6 @@ namespace SOA.Base
                 valueRect.position.y + valueRect.height,
                 valueRect.width,
                 EditorGUIUtility.singleLineHeight);
-            //eventsFoldOutRect = EditorGUI.IndentedRect(eventsFoldOutRect);
             EditorGUI.indentLevel += 1;
             property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue = EditorGUI.Foldout(
                 eventsFoldOutRect, property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue,
@@ -426,7 +443,7 @@ namespace SOA.Base
             return latestRect;
         }
 
-        public override float GetPropertyHeight(SerializedProperty property, GUIContent label) 
+        public override float GetPropertyHeight(SerializedProperty property, GUIContent label)
         {
             var scopeProperty = property.FindPropertyRelative(_scopePropertyPath);
             var persistenceProperty = property.FindPropertyRelative(_persistencePropertyPath);
@@ -436,7 +453,7 @@ namespace SOA.Base
             var persistence = (Persistence) persistenceProperty.enumValueIndex;
             var usageHeight = (scopePropertyHeight > persistencePropertyHeight
                                   ? scopePropertyHeight
-                                  : persistencePropertyHeight) + +_breakLine;
+                                  : persistencePropertyHeight) + _breakLine;
             float valueHeight;
             switch (scope)
             {
@@ -461,16 +478,21 @@ namespace SOA.Base
                         return usageAndValueHeight;
                     case Persistence.Variable:
                     {
-                        var eventsFoldoutHeight = EditorGUIUtility.singleLineHeight;
-                        var onValueChangedHeight = property.GetRelativePropertyHeight(_onValueChangedPropertyPath);
-                        var onValueChangedWithHistoryHeight =
-                            property.GetRelativePropertyHeight(_onValueChangedWithHistoryPropertyPath);
-                        var foldedInHeight = usageAndValueHeight + eventsFoldoutHeight;
-                        var foldedOutHeight = foldedInHeight + _breakLine + onValueChangedHeight + _breakLine +
-                                              onValueChangedWithHistoryHeight + EditorGUIUtility.singleLineHeight;
-                        return property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue
-                            ? foldedOutHeight
-                            : foldedInHeight;
+                        var hideOnValueChangedEvents = HideOnValueChangedEvents(property);
+                        if (!hideOnValueChangedEvents)
+                        {
+                            var eventsFoldoutHeight = EditorGUIUtility.singleLineHeight;
+                            var onValueChangedHeight = property.GetRelativePropertyHeight(_onValueChangedPropertyPath);
+                            var onValueChangedWithHistoryHeight =
+                                property.GetRelativePropertyHeight(_onValueChangedWithHistoryPropertyPath);
+                            var foldedInHeight = usageAndValueHeight + eventsFoldoutHeight;
+                            var foldedOutHeight = foldedInHeight + _breakLine + onValueChangedHeight + _breakLine +
+                                                  onValueChangedWithHistoryHeight + EditorGUIUtility.singleLineHeight;
+                            return property.FindPropertyRelative(_foldoutEventsPropertyPath).boolValue
+                                ? foldedOutHeight
+                                : foldedInHeight;
+                        }
+                        else return usageAndValueHeight;
                     }
 
                     default:

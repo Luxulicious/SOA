@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Reflection;
 using UnityEditor;
 using UnityEngine;
@@ -31,6 +32,11 @@ namespace SOA.Base
             var parentType = property.serializedObject.targetObject.GetType();
             var fi = parentType.GetFieldViaPath(property.propertyPath);
             return fi?.GetValue(property.serializedObject.targetObject);
+        }
+
+        public static T GetValue<T>(this SerializedProperty property)
+        {
+            return (T) property.GetValue();
         }
 
         public static void SetValue(this SerializedProperty property, object value)
@@ -69,6 +75,21 @@ namespace SOA.Base
                 return type.IsSubclassOf(typeof(GameObject)) || type == typeof(GameObject) ||
                        type.IsSubclassOf(typeof(Component)) || type == typeof(Component);
             throw new NullReferenceException($"Failed to get type of {property}");
+        }
+
+        /// <summary>
+        /// Checks if SerializedProperty has attribute of type T
+        /// </summary>
+        /// <typeparam name="T">Type of attribute</typeparam>
+        /// <param name="property"></param>
+        /// <returns></returns>
+        public static bool HasAttribute<T>(this SerializedProperty property)
+        {
+            var parentType = property.serializedObject.targetObject.GetType();
+            var fieldInfo = parentType.GetField(property.name);
+            var attributes = fieldInfo.GetCustomAttributes();
+            var hasAttribute = attributes.Any(x => x is /*TODO Use T in refactor*/ T);
+            return hasAttribute;
         }
 
         public static FieldInfo GetFieldViaPath(this Type type, string path)
