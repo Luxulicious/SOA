@@ -85,10 +85,11 @@ namespace SOA.Base
         /// <returns></returns>
         public static bool HasAttribute<T>(this SerializedProperty property)
         {
+            var hasAttribute = false;
             var parentType = property.serializedObject.targetObject.GetType();
-            var fieldInfo = parentType.GetField(property.name);
-            var attributes = fieldInfo.GetCustomAttributes();
-            var hasAttribute = attributes.Any(x => x is /*TODO Use T in refactor*/ T);
+            var fieldInfo = parentType.GetField(property.name, BindingFlags.NonPublic | BindingFlags.Instance);
+            var attributes = fieldInfo?.GetCustomAttributes();
+            hasAttribute = attributes != null && attributes.Any(x => x is /*TODO Use T in refactor*/ T);
             return hasAttribute;
         }
 
@@ -107,6 +108,7 @@ namespace SOA.Base
                 else
                     return null;
             }
+
             if (fi != null)
                 return fi;
             else return null;
