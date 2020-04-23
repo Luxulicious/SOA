@@ -1,8 +1,10 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Events;
+using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
@@ -16,6 +18,7 @@ namespace SOA.Base
         protected static readonly string _runtimeValuePropertyPath = "_runtimeValue";
         protected static readonly string _foldOutOnChangeEventsPropertyPath = "_foldOutOnChangeEvents";
         protected static readonly string _foldOutUsesPropertyPath = "_foldOutUses";
+
 
         public override void OnInspectorGUI()
         {
@@ -120,6 +123,9 @@ namespace SOA.Base
             serializedObject.ApplyModifiedProperties();
         }
 
+        private static bool prevIsPlaying;
+        private static bool isPlaying;
+
         protected virtual void DrawUses()
         {
             //TODO Replace with serialized property
@@ -129,54 +135,78 @@ namespace SOA.Base
             {
                 EditorGUI.indentLevel += 1;
 
-                /*
-                EditorGUI.BeginDisabledGroup(true);
-                if (GUILayout.Button("Refresh"))
-                {
-                    var registeredReferenceContainers =
-                        FindObjectsOfType<MonoBehaviour>().OfType<IRegisteredReferenceContainer>();
-                    foreach (var registeredReferenceContainer in registeredReferenceContainers)
-                        registeredReferenceContainer.Register();
-                }
-                EditorGUI.EndDisabledGroup();
-                */
-
                 //Get target variable
                 var variable = serializedObject.targetObject as Variable<T, E, EE>;
-                //Get registrations
-                //TODO Add References from events as well...
-                var registrations = variable?.Uses;
-                //Get registered referenced containers as UnityEngine.Object
-                var registeredReferenceContainers = registrations?.Keys.Select(x => x as Object);
-                //Filter out any null references just in case
-                registeredReferenceContainers = registeredReferenceContainers?.Where(x => x != null);
-                //Removed prefabs TODO add these back in a different category
-                //TODO Also maybe separate scriptable objects as well
-                var newRegisteredReferenceContainers = registeredReferenceContainers?.Where(x =>
-                    x is GameObject gameObject && gameObject.scene.isLoaded ||
-                    x is ScriptableObject ||
-                    x is Component component && component.gameObject.scene.isLoaded
-                );
-                //Order alphabetically
-                newRegisteredReferenceContainers = newRegisteredReferenceContainers?.OrderBy(x => x?.name);
-                //Draw the uses
-                if (newRegisteredReferenceContainers != null)
-                    foreach (var referencedObject in newRegisteredReferenceContainers)
-                    {
-                        EditorGUILayout.BeginHorizontal();
-                        EditorGUI.BeginDisabledGroup(true);
-                        EditorGUILayout.ObjectField("", referencedObject,
-                            typeof(Object), true);
-                        EditorGUI.EndDisabledGroup();
-                        if (GUILayout.Button("Ping")) EditorGUIUtility.PingObject(referencedObject);
 
-                        if (GUILayout.Button("Select")) Selection.activeObject = referencedObject;
-                        EditorGUILayout.EndHorizontal();
-                    }
+                //When switching play mode auto refresh references
+                isPlaying = Application.isPlaying;
+                var changedMode = prevIsPlaying != isPlaying;
+                if (changedMode)
+                {
+                    RefreshUses();
+                    prevIsPlaying = isPlaying;
+                }
+
+                //Refresh uses manually using this button
+                if (GUILayout.Button("Refresh"))
+                {
+                    RefreshUses();
+                }
+
+                //Get uses
+                var prefabComponentUses =
+                    variable?.Uses.Where(x => x.Container.GetContainerType() == ContainerType.PrefabComponent);
+                var nonPrefabComponentUses =
+                    variable?.Uses.Where(x => x.Container.GetContainerType() == ContainerType.NonPrefabComponent);
+                var scriptableObjectUses =
+                    variable?.Uses.Where(x => x.Container.GetContainerType() == ContainerType.ScriptableObject);
+                var otherUses = variable?.Uses.Where(x => x.Container.GetContainerType() == ContainerType.Other)
+                    .Where(x => x is Object);
+
+                DrawUses(nonPrefabComponentUses, "Scene");
+                DrawUses(scriptableObjectUses, "Scriptable Objects");
+                DrawUses(prefabComponentUses, "Prefab");
+                //TODO Draw Uses for event references
+                //DrawUses(EventUses, "Events");
+                DrawUses(otherUses, "Other");
 
                 EditorGUI.indentLevel -= 1;
             }
+        }
 
+        private static void RefreshUses()
+        {
+            AssetDatabase.Refresh(ImportAssetOptions.Default);
+            var containers =
+                FindObjectsOfType<MonoBehaviour>().OfType<IRegisteredReferenceContainer>().ToList();
+            foreach (var container in containers)
+                container.Register();
+        }
+
+        public virtual void DrawUses(IEnumerable<ReferenceUse> nonPrefabComponentUses, string header = "")
+        {
+            if (nonPrefabComponentUses != null)
+            {
+                if (nonPrefabComponentUses.Any())
+                {
+                    EditorGUILayout.LabelField(header, EditorStyles.boldLabel);
+                    foreach (var use in nonPrefabComponentUses)
+                    {
+                        EditorGUILayout.BeginHorizontal();
+                        EditorGUI.BeginDisabledGroup(true);
+                        EditorGUILayout.ObjectField(
+                            "",
+                            use.Container as Object,
+                            typeof(Object),
+                            true);
+                        EditorGUI.EndDisabledGroup();
+                        if (GUILayout.Button("Ping")) EditorGUIUtility.PingObject(use.Container as Object);
+
+                        if (GUILayout.Button("Select")) Selection.activeObject = use.Container as Object;
+                        EditorGUILayout.EndHorizontal();
+                    }
+                }
+            }
         }
 
         protected virtual void DrawInvokeOnChangeEventsButtons(V variable)

@@ -39,8 +39,9 @@ namespace SOA.Base
 
         [SerializeField, HideInInspector] protected V _prevGlobalValue;
         [SerializeField, HideInInspector] protected bool _foldoutEvents = false;
-        [SerializeField, HideInInspector] protected IRegisteredReferenceContainer _registration;
+        [SerializeField, HideInInspector] protected IRegisteredReferenceContainer registeredReferenceContainer;
 
+        #region Constructors
         /// <summary>
         /// Creates an unregistered reference.
         /// </summary>
@@ -65,7 +66,7 @@ namespace SOA.Base
         /// <param name="value">Local value</param>
         public Reference(IRegisteredReferenceContainer registeredReferenceContainer)
         {
-            _registration = registeredReferenceContainer;
+            this.registeredReferenceContainer = registeredReferenceContainer;
         }
 
         /// <summary>
@@ -74,11 +75,11 @@ namespace SOA.Base
         /// <param name="value">Local value</param>
         public Reference(IRegisteredReferenceContainer registeredReferenceContainer, T value)
         {
-            _registration = registeredReferenceContainer;
+            this.registeredReferenceContainer = registeredReferenceContainer;
             _localValue = value;
             _scope = Scope.Local;
         }
-
+        #endregion
         protected virtual void InvokeOnValueChanged(T currentValue)
         {
             _onValueChangedEvent?.Invoke(currentValue);
@@ -196,7 +197,6 @@ namespace SOA.Base
         {
             RefreshListenersToGlobalValueOnValueChangedEvents();
             RefreshRegistrationsToGlobalValue();
-            _prevGlobalValue = _globalValue;
         }
 
         public virtual void RefreshRegistrationsToGlobalValue()
@@ -208,37 +208,40 @@ namespace SOA.Base
                     $"Please register when instancing a reference. \n" +
                     $"This can be done manually or by using {typeof(RegisteredMonoBehaviour).Name} instead of {typeof(MonoBehaviour).Name}."
                     , _globalValue);
+                return;
             }
-            else
-            {
-                _prevGlobalValue?.RemoveUse(_registration, this);
-                _globalValue?.RemoveUse(_registration, this);
-                _globalValue?.AddUse(_registration, this);
-            }
+            _prevGlobalValue?.RemoveUse(registeredReferenceContainer, this); 
+            _globalValue?.RemoveUse(registeredReferenceContainer, this);
+            _globalValue?.AddUse(registeredReferenceContainer, this);
+            _prevGlobalValue = _globalValue;
+            
         }
 
         public virtual void RefreshListenersToGlobalValueOnValueChangedEvents()
         {
-            //Remove existing listeners from previous global value
-            _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
-            _prevGlobalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
-            //Remove existing listeners from current global value
-            _globalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
-            _globalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
-            //Add listeners to current global Value
-            _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
-            _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+            if (_prevGlobalValue != _globalValue)
+            {
+                //Remove existing listeners from previous global value
+                _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+                _prevGlobalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                //Remove existing listeners from current global value
+                _globalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+                _globalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                //Add listeners to current global Value
+                _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
+                _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+            }
         }
 
         public void Register(IRegisteredReferenceContainer registeredReferenceContainer)
         {
-            _registration = registeredReferenceContainer;
+            this.registeredReferenceContainer = registeredReferenceContainer;
             RefreshRegistrationsToGlobalValue();
         }
 
         public bool HasRegistration()
         {
-            return _registration != null;
+            return registeredReferenceContainer != null;
         }
 
         public void Ping(V variable)
@@ -278,14 +281,14 @@ namespace SOA.Base
         public void Ping()
         {
 #if UNITY_EDITOR
-            EditorGUIUtility.PingObject(_registration as UnityEngine.Object);
+            EditorGUIUtility.PingObject(registeredReferenceContainer as UnityEngine.Object);
 #endif  
         }
 
         public void Select()
         {
 #if UNITY_EDITOR
-            Selection.activeObject = _registration as UnityEngine.Object;
+            Selection.activeObject = registeredReferenceContainer as UnityEngine.Object;
 #endif
         }
     }
