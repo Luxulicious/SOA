@@ -117,7 +117,6 @@ namespace SOA.Base
 
             PostOnChangedEvents();
 
-            //TODO Draw references form
             DrawUses();
 
             serializedObject.ApplyModifiedProperties();
@@ -126,9 +125,9 @@ namespace SOA.Base
         private static bool prevIsPlaying;
         private static bool isPlaying;
 
+        //TODO Currently uses IRegisteredReferenceContainer as a crutch for finding uses, ideally should be done via reflection
         protected virtual void DrawUses()
         {
-            //TODO Replace with serialized property
             var foldOutUsesProperty = serializedObject.FindProperty(_foldOutUsesPropertyPath);
             foldOutUsesProperty.boolValue = EditorGUILayout.Foldout(foldOutUsesProperty.boolValue, "Uses");
             if (foldOutUsesProperty.boolValue)
