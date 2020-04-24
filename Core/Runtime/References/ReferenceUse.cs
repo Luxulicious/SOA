@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
@@ -131,15 +133,18 @@ namespace SOA.Base
 
         public bool Remove(IRegisteredReferenceContainer container, IRegisteredReference reference)
         {
-            if (!_uses.Any()) return false;
+            var result = false;
+            //TODO Invert these first few if-statements that are empty
+            if (!_uses.Any())
+            {
+            }
             //If this container is not yet in collection
-            if
+            else if
             (
                 _uses.All(x =>
                     x.Container != container)
             )
             {
-                return false;
             }
             //If this container is in collection but none of them match type
             else if
@@ -149,7 +154,6 @@ namespace SOA.Base
                     x.Container.GetContainerType() != container.GetContainerType())
             )
             {
-                return false;
             }
             else
             {
@@ -168,8 +172,22 @@ namespace SOA.Base
                     _uses = usesToKeep;
                 }
 
-                return referenceRemoved;
+                result = referenceRemoved;
             }
+
+            RemoveInvalidUses();
+            return result;
+        }
+
+        public void RemoveInvalidUses()
+        {
+            var uses = new List<ReferenceUse>();
+            foreach (var use in _uses)
+            {
+                if (use?.Container != null && ((use.Container as Object) != null && use.References.Any()))
+                        uses.Add(use);
+            }
+            _uses = uses;
         }
     }
 }

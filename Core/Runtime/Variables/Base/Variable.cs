@@ -134,6 +134,9 @@ namespace SOA.Base
         [SerializeField] [HideInInspector] protected ReferenceUses _uses =
             new ReferenceUses();
 
+        public ReferenceUses ReferenceUses => _uses;
+
+        [Obsolete("Use ReferenceUses instead")]
         public List<ReferenceUse> Uses => _uses.Uses;
 
         public virtual void AddUse(IRegisteredReferenceContainer container,

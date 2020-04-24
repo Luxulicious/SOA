@@ -152,6 +152,8 @@ namespace SOA.Base
                     RefreshUses();
                 }
 
+                //Remove invalid uses beforehand just in case
+                variable?.ReferenceUses.RemoveInvalidUses();
                 //Get uses
                 var prefabComponentUses =
                     variable?.Uses.Where(x => x.Container.GetContainerType() == ContainerType.PrefabComponent);
