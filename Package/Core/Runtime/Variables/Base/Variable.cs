@@ -1,30 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using JetBrains.Annotations;
 using UnityEngine;
 using UnityEngine.Events;
 using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
-    /// <summary>
-    /// A ScriptableObject alternative that allows for registering any reference.
-    /// </summary>
-    public abstract class RegisteredScriptableObject : ScriptableObject, IRegisteredReferenceContainer
-    {
-        public virtual void OnAfterDeserialize()
-        {
-            Register();
-        }
-
-        public virtual void OnBeforeSerialize()
-        {
-            Register();
-        }
-
-        public abstract void Register();
-    }
+   
+    
 
     public abstract class Variable<T, E, EE> : ScriptableObject, ISerializationCallbackReceiver
         where EE : UnityEvent<T, T>, new() where E : UnityEvent<T>, new()
@@ -35,10 +19,6 @@ namespace SOA.Base
 
         [SerializeField] [HideInInspector] protected bool _foldOutOnChangeEvents = false;
         [SerializeField] [HideInInspector] protected bool _foldOutUses = false;
-
-        [SerializeField] [HideInInspector]
-        protected Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>> _uses =
-            new Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>>();
 
         [Tooltip("Invokes an event with the current value as an argument")] [SerializeField]
         protected E _onValueChangedEvent = new E();
@@ -111,10 +91,6 @@ namespace SOA.Base
             }
         }
 
-        public Dictionary<IRegisteredReferenceContainer, HashSet<IRegisteredReference>>
-            Uses =>
-            _uses;
-
         private void OnEnable()
         {
             Revert();
@@ -124,6 +100,8 @@ namespace SOA.Base
         {
             _runtimeValue = _defaultValue;
         }
+
+        //TODO Maybe make a partial class out of this region
 
         #region Listeners
 
@@ -149,63 +127,35 @@ namespace SOA.Base
 
         #endregion
 
-        #region Registration
+        //TODO Maybe make a partial class out of this region
 
-        public virtual void AddUse(IRegisteredReferenceContainer referenceContainer,
+        #region Registration 
+
+        [SerializeField] [HideInInspector] protected ReferenceUses _uses =
+            new ReferenceUses();
+
+        public ReferenceUses ReferenceUses => _uses;
+
+        [Obsolete("Use ReferenceUses instead")]
+        public List<ReferenceUse> Uses => _uses.Uses;
+
+        public virtual void AddUse(IRegisteredReferenceContainer container,
             IRegisteredReference reference)
         {
-            if (Uses.ContainsKey(referenceContainer))
-                Uses[referenceContainer].Add(reference);
-            else
-                Uses.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
-
-            CleanupUses();
+            _uses.Add(container, reference);
         }
 
-        public virtual void RemoveUse(
-            IRegisteredReferenceContainer referenceContainer,
+        public virtual bool RemoveUse(
+            IRegisteredReferenceContainer container,
             IRegisteredReference reference)
         {
-            if (!Uses.ContainsKey(referenceContainer)) return;
-            Uses[referenceContainer].Remove(reference);
-            if (Uses[referenceContainer].Count < 1)
-                Uses.Remove(referenceContainer);
-
-            CleanupUses();
-        }
-
-        private void CleanupUses()
-        {
-            //Remove registrations that don't have any values
-            var registrationsWithoutReferences = new List<IRegisteredReferenceContainer>();
-            foreach (var registration in _uses)
-            {
-                if (registration.Value.Count <= 0)
-                {
-                    registrationsWithoutReferences.Add(registration.Key);
-                    continue;
-                }
-            }
-
-            registrationsWithoutReferences.ForEach(x => _uses.Remove(x));
-            //Remove null references from registrations
-            foreach (var registration in _uses)
-            {
-                registration.Value.Remove(null);
-            }
-        }
-
-        public virtual void OnBeforeSerialize()
-        {
-            //Do nothing
-        }
-
-        public virtual void OnAfterDeserialize()
-        {
-            CleanupUses();
+            var removedUse = _uses.Remove(container, reference);
+            return removedUse;
         }
 
         #endregion
+
+        //TODO Maybe make a partial class out of this region
 
         #region Methods for forcing event invocation
 
@@ -221,63 +171,12 @@ namespace SOA.Base
 
         #endregion
 
-        #region Obsolete
-
-        [Obsolete]
-        public virtual void AddRegisteredAutoListener(UnityAction<T> onChangeListener,
-            UnityAction<T, T> onChangeWithHistoryListener,
-            IRegisteredReferenceContainer referenceContainer,
-            IRegisteredReference reference)
+        public virtual void OnBeforeSerialize()
         {
-            AddListener(onChangeListener, onChangeWithHistoryListener);
-            if (Uses.ContainsKey(referenceContainer))
-                Uses[referenceContainer].Add(reference);
-            else
-                Uses.Add(referenceContainer, new HashSet<IRegisteredReference>() {reference});
         }
 
-        [Obsolete]
-        public virtual void AddUnregisteredAutoListener(UnityAction<T> onChangeListener,
-            UnityAction<T, T> onChangeWithHistoryListener)
+        public virtual void OnAfterDeserialize()
         {
-            AddListener(onChangeListener, onChangeWithHistoryListener);
         }
-
-        [Obsolete]
-        private void AddListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
-        {
-            _onValueChangedEvent.AddListener(onChangeListener);
-            _onValueChangedWithHistoryEvent.AddListener(onChangeWithHistoryListener);
-        }
-
-        [Obsolete]
-        public virtual void RemoveRegisteredAutoListener(
-            UnityAction<T> onChangeListener,
-            UnityAction<T, T> onChangeWithHistoryListener,
-            IRegisteredReferenceContainer referenceContainer,
-            IRegisteredReference reference)
-        {
-            AddListener(onChangeListener, onChangeWithHistoryListener);
-            if (!Uses.ContainsKey(referenceContainer)) return;
-            Uses[referenceContainer].Remove(reference);
-            if (Uses[referenceContainer].Count < 1)
-                Uses.Remove(referenceContainer);
-        }
-
-        [Obsolete]
-        public virtual void RemoveUnregisteredAutoListener(UnityAction<T> onChangeListener,
-            UnityAction<T, T> onChangeWithHistoryListener)
-        {
-            RemoveListener(onChangeListener, onChangeWithHistoryListener);
-        }
-
-        [Obsolete]
-        private void RemoveListener(UnityAction<T> onChangeListener, UnityAction<T, T> onChangeWithHistoryListener)
-        {
-            _onValueChangedEvent.AddListener(onChangeListener);
-            _onValueChangedWithHistoryEvent.AddListener(onChangeWithHistoryListener);
-        }
-
-        #endregion
     }
 }

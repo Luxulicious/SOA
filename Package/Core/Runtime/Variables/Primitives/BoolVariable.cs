@@ -20,7 +20,7 @@ namespace SOA.Common.Primitives
 
         [SerializeField] [Tooltip("Value will be based on a composite of one or more referenced variables")]
         protected bool _composite = false;
-
+        
         [SerializeField] protected bool _compositeValue;
         [SerializeField] protected BooleanOperator _andOr;
 
@@ -171,6 +171,22 @@ namespace SOA.Common.Primitives
         #endregion
 
         #region Composite methods
+
+        public bool Composite
+        {
+            get => _composite;
+            set
+            {
+                var prev = _composite;
+                _composite = value; 
+                if(prev != _composite)
+                    if(!_composite)
+                        UnRegister();
+                    else
+                        Register();
+
+            }
+        }
 
         public bool CompositeValue
         {
@@ -374,9 +390,27 @@ namespace SOA.Common.Primitives
             _onAfterDeserializedEvent.RemoveListener(action);
         }
 
+
         #endregion
 
         #endregion
+
+        protected virtual void OnEnable()
+        {
+            Register();
+        }
+
+        protected virtual void OnDisable()
+        {
+            UnRegister();
+        }
+
+        public void UnRegister()
+        {
+            foreach (var memberValue in _memberValues)
+                if (memberValue?.Scope == Scope.Global)
+                    memberValue?.GlobalValue?.RemoveUse(this, memberValue);
+        }
 
         /// <summary>
         /// If composite register this as a use for the composite member values
