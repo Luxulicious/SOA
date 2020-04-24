@@ -1,0 +1,93 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &2114765457152002735
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 980651148055003590}
+  - component: {fileID: 6113443835791237696}
+  - component: {fileID: 1026093917}
+  m_Layer: 0
+  m_Name: (Prefabbed) Reference Holder
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &980651148055003590
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114765457152002735}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.644379, y: -0.34708384, z: -3.5410156}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 0
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &6113443835791237696
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114765457152002735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cab2d4f2468ee9540a5524e004865b46, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _reference:
+    _scope: 1
+    _persistence: 0
+    _localValue: 0
+    _globalValue: {fileID: 11400000, guid: 732597e1ab5dd084aa843fc5dea84011, type: 2}
+    _onValueChangedEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedWithHistoryEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _foldout: 1
+    _prevGlobalValue: {fileID: 11400000, guid: 732597e1ab5dd084aa843fc5dea84011, type: 2}
+    _foldoutEvents: 0
+--- !u!114 &1026093917
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2114765457152002735}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c0be1a0f9f4d3b441a071c3370c2972f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _reference:
+    _scope: 1
+    _persistence: 0
+    _localValue: 0
+    _globalValue: {fileID: 11400000, guid: 693f508f51e101246b9e973b5a4f1469, type: 2}
+    _onValueChangedEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedWithHistoryEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _foldout: 0
+    _prevGlobalValue: {fileID: 11400000, guid: 693f508f51e101246b9e973b5a4f1469, type: 2}
+    _foldoutEvents: 0
+    _onValueChangedToTrueEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _onValueChangedToFalseEvent:
+      m_PersistentCalls:
+        m_Calls: []
+    _invertResult: 0
