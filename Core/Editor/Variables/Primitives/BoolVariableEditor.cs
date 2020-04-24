@@ -1,4 +1,5 @@
-﻿using SOA.Base;
+﻿using System;
+using SOA.Base;
 using UnityEditor;
 using UnityEngine;
 
@@ -57,9 +58,17 @@ namespace SOA.Common.Primitives
         {
             base.PostOnChangedEvents();
             var compositeProperty = serializedObject.FindProperty(_compositePropertyPath);
-            EditorGUILayout.PropertyField(compositeProperty, true);
-            var compositeValue = compositeProperty.boolValue;
-            if (compositeValue)
+            var variable = target as BoolVariable;
+            try
+            {
+                variable.Composite = EditorGUILayout.Toggle(compositeProperty.displayName, variable.Composite);
+            }
+            catch (NullReferenceException e)
+            {
+                Debug.LogError(e);
+            }
+            //var compositeValue = compositeProperty.boolValue;
+            if (variable.Composite)
             {
                 var memberValuesProperty = serializedObject.FindProperty(_memberValuesPropertyPath);
                 var andOrProperty = serializedObject.FindProperty(_andOrPropertyPath);
