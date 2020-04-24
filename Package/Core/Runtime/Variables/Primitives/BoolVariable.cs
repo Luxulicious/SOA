@@ -395,16 +395,15 @@ namespace SOA.Common.Primitives
 
         #endregion
 
-        void Awake()
+        protected virtual void OnEnable()
         {
             Register();
         }
 
-        void OnDestroy()
+        protected virtual void OnDisable()
         {
             UnRegister();
         }
-
 
         public void UnRegister()
         {

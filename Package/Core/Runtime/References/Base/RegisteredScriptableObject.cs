@@ -16,12 +16,12 @@
             Register();
         }
 
-        private void Awake()
+        private void OnEnable()
         {
             Register();
         }
 
-        private void OnDestroy()
+        private void OnDisable()
         {
             UnRegister(); 
         }
