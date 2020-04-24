@@ -162,7 +162,7 @@ namespace SOA.Base
                     //Remove uses without references in them
                     var usesToKeep = new List<ReferenceUse>();
                     foreach (var use in _uses)
-                        if (use.References.Any())
+                        if (use.References.Any(x => x != null))
                             usesToKeep.Add(use);
 
                     _uses = usesToKeep;

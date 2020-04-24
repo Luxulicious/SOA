@@ -16,5 +16,17 @@
             Register();
         }
 
+        private void Awake()
+        {
+            Register();
+        }
+
+        private void OnDestroy()
+        {
+            UnRegister(); 
+        }
+        
         public abstract void Register();
+
+        public abstract void UnRegister();
     }}

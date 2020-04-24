@@ -147,7 +147,6 @@ namespace SOA.Base
             IRegisteredReference reference)
         {
             var removedUse = _uses.Remove(container, reference);
-
             return removedUse;
         }
 
