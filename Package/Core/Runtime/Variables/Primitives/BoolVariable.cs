@@ -248,8 +248,6 @@ namespace SOA.Common.Primitives
                             _onValueChangedToFalseEvent.Invoke(false);
                         else _onValueChangedToTrueEvent.Invoke(true);
                     }
-            
-            
         }
 
         /// <summary>

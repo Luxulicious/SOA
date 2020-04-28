@@ -88,15 +88,19 @@ namespace SOA.Common.Primitives
             else
             {
                 var compositeValueProperty = serializedObject.FindProperty(_compositeValuePropertyPath);
+                var targetVariable = runtimeValueProperty.serializedObject.targetObject as BoolVariable;
                 if (Application.isPlaying)
                 {
-                    EditorGUILayout.PropertyField(compositeValueProperty);
+                    if(targetVariable != null)
+                        EditorGUILayout.Toggle(compositeValueProperty.displayName, targetVariable.CompositeValue);
+                    else
+                        EditorGUILayout.Toggle(compositeValueProperty.displayName, compositeValueProperty.boolValue);
+
                 }
                 else
                 {
                     EditorGUI.BeginDisabledGroup(true);
                     EditorGUILayout.Toggle($"{compositeValueProperty.displayName} (Runtime only)", false);
-
                     EditorGUI.EndDisabledGroup();
                 }
             }
