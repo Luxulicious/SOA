@@ -83,6 +83,10 @@ namespace SOA.Common.Primitives
             _globalValue?.AddListenerToOnValueChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
         }
 
-
+        public override bool CanRefreshListenersToGlobalValueOnValueChangedEvents()
+        {
+            //TODO Maybe change to if _prevGlobalValue != _globalValue && !_composite|| _prevCompositeValue != _compositeValue && _composite
+            return true;
+        }
     }
 }

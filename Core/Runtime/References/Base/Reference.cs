@@ -217,9 +217,14 @@ namespace SOA.Base
             
         }
 
+        public virtual bool CanRefreshListenersToGlobalValueOnValueChangedEvents()
+        {
+            return _prevGlobalValue != _globalValue;
+        }
+
         public virtual void RefreshListenersToGlobalValueOnValueChangedEvents()
         {
-            if (_prevGlobalValue != _globalValue)
+            if (CanRefreshListenersToGlobalValueOnValueChangedEvents())
             {
                 //Remove existing listeners from previous global value
                 _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
