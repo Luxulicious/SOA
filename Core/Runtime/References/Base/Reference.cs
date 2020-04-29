@@ -219,7 +219,7 @@ namespace SOA.Base
 
         public virtual bool CanRefreshListenersToGlobalValueOnValueChangedEvents()
         {
-            return _prevGlobalValue != _globalValue;
+            return true; //TODO This was commented out because it blocked on change events, fix this properly to optimize event subscribing //_prevGlobalValue != _globalValue;
         }
 
         public virtual void RefreshListenersToGlobalValueOnValueChangedEvents()
