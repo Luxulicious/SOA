@@ -19,5 +19,9 @@ namespace SOA.Common.UnityEngine
         public Vector2Reference(IRegisteredReferenceContainer registration, Vector2 value) : base(registration, value)
         {
         }
+
+        public Vector2Reference(Vector2 value) : base(value)
+        {
+        }
     }
 }
