@@ -31,6 +31,10 @@ namespace SOA.Common.Primitives
         {
         }
 
+        public BoolReference(bool value) : base(value)
+        {
+        }
+
         public override bool Value
         {
             get => _invertResult ? !base.Value : base.Value;
@@ -55,7 +59,7 @@ namespace SOA.Common.Primitives
 
         protected void InvokeOnValueChangedToTrueEvent(bool value)
         {
-            if(!_invertResult)
+            if (!_invertResult)
                 _onValueChangedToTrueEvent.Invoke(true);
             else
                 _onValueChangedToFalseEvent.Invoke(false);
