@@ -15,5 +15,17 @@ namespace SOA.Base
         {
             _reference.Register(this);
         }
+
+        public virtual T Value
+        {
+            get => _reference.Value;
+            set
+            {
+                if (!ReadOnly)
+                    _reference.Value = value;
+            }
+        }
+
+        public virtual bool ReadOnly => false;
     }
 }
