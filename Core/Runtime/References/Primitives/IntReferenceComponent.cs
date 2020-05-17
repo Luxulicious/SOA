@@ -14,11 +14,5 @@ namespace SOA.Common.Primitives
         {
             _reference.Value += i;
         }
-
-        public int Value
-        {
-            get => _reference.Value;
-            set => _reference.Value = value;
-        }
     }
 }
