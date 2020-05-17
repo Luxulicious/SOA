@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
+using Unity.Profiling;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
@@ -167,7 +169,7 @@ namespace SOA.Base
         {
             return ((T) obj).Equals(Value);
         }
-        
+
         public void AddListenerToOnValueChanged(UnityAction<T> action)
         {
             _onValueChangedEvent.AddListener(action);
@@ -218,24 +220,28 @@ namespace SOA.Base
 
         public virtual bool CanRefreshListenersToGlobalValueOnValueChangedEvents()
         {
-            return true; //TODO This was commented out because it blocked on change events, fix this properly to optimize event subscribing //_prevGlobalValue != _globalValue;
+            return _prevGlobalValue != _globalValue;
         }
+
+        public static ProfilerMarker refreshListenersToGlobalValueOnValueChangedEventsMarker = new ProfilerMarker("RefreshListenersToGlobalValueOnValueChangedEvents");
 
         public virtual void RefreshListenersToGlobalValueOnValueChangedEvents()
         {
-            if (CanRefreshListenersToGlobalValueOnValueChangedEvents())
-            {
-                //Remove existing listeners from previous global value
-                _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
-                _prevGlobalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
-                //Remove existing listeners from current global value
-                _globalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
-                _globalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
-                //Add listeners to current global Value
-                _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
-                _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
-                //Refresh prevGlobalValue
-                _prevGlobalValue = _globalValue;
+            using (refreshListenersToGlobalValueOnValueChangedEventsMarker.Auto()) {
+                if (CanRefreshListenersToGlobalValueOnValueChangedEvents())
+                {
+                    //Remove existing listeners from previous global value
+                    _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+                    _prevGlobalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                    //Remove existing listeners from current global value
+                    _globalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+                    _globalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                    //Add listeners to current global Value
+                    _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
+                    _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                    //Refresh prevGlobalValue
+                    _prevGlobalValue = _globalValue;
+                }
             }
         }
 
