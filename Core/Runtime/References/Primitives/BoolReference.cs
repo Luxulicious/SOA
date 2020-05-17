@@ -1,7 +1,6 @@
 ﻿using System;
 using SOA.Base;
 using UnityEngine;
-using Object = UnityEngine.Object;
 
 namespace SOA.Common.Primitives
 {
@@ -76,15 +75,36 @@ namespace SOA.Common.Primitives
         public override void RefreshRegistrationsToGlobalValue()
         {
             base.RefreshRegistrationsToGlobalValue();
-            //Remove existing listeners from previous global value
-            _prevGlobalValue?.RemoveListenerFromOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
-            _prevGlobalValue?.RemoveListenerFromOnChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
-            //Remove existing listeners from current global value
-            _globalValue?.RemoveListenerFromOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
-            _globalValue?.RemoveListenerFromOnChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
-            //Add listeners to current global Value
-            _globalValue?.AddListenerToOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
-            _globalValue?.AddListenerToOnValueChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
+        }
+
+        public override void RefreshListenersToGlobalValueOnValueChangedEvents()
+        {
+            using (refreshListenersToGlobalValueOnValueChangedEventsMarker.Auto())
+            {
+                if (CanRefreshListenersToGlobalValueOnValueChangedEvents())
+                {
+                    //Remove existing listeners from previous global value
+                    _prevGlobalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+                    _prevGlobalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                    //Remove existing listeners from current global value
+                    _globalValue?.RemoveListenerFromOnChange(InvokeOnValueChanged);
+                    _globalValue?.RemoveListenerFromOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                    //Add listeners to current global Value
+                    _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
+                    _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                    //Remove existing listeners from previous global value
+                    _prevGlobalValue?.RemoveListenerFromOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
+                    _prevGlobalValue?.RemoveListenerFromOnChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
+                    //Remove existing listeners from current global value
+                    _globalValue?.RemoveListenerFromOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
+                    _globalValue?.RemoveListenerFromOnChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
+                    //Add listeners to current global Value
+                    _globalValue?.AddListenerToOnValueChangedToTrueEvent(InvokeOnValueChangedToTrueEvent);
+                    _globalValue?.AddListenerToOnValueChangedToFalseEvent(InvokeOnValueChangedToFalseEvent);
+                    //Refresh prevGlobalValue
+                    _prevGlobalValue = _globalValue;
+                }
+            }
         }
 
         public override bool CanRefreshListenersToGlobalValueOnValueChangedEvents()
