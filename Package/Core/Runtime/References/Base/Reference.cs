@@ -196,7 +196,6 @@ namespace SOA.Base
         public virtual void OnAfterDeserialize()
         {
             RefreshListenersToGlobalValueOnValueChangedEvents();
-            RefreshRegistrationsToGlobalValue();
         }
 
         public virtual void RefreshRegistrationsToGlobalValue()
@@ -213,7 +212,7 @@ namespace SOA.Base
             _prevGlobalValue?.RemoveUse(registeredReferenceContainer, this); 
             _globalValue?.RemoveUse(registeredReferenceContainer, this);
             _globalValue?.AddUse(registeredReferenceContainer, this);
-            _prevGlobalValue = _globalValue;
+            //_prevGlobalValue = _globalValue;
             
         }
 
@@ -235,6 +234,8 @@ namespace SOA.Base
                 //Add listeners to current global Value
                 _globalValue?.AddListenerToOnChange(InvokeOnValueChanged);
                 _globalValue?.AddListenerToOnChangeWithHistory(InvokeOnValueChangedWithHistory);
+                //Refresh prevGlobalValue
+                _prevGlobalValue = _globalValue;
             }
         }
 
