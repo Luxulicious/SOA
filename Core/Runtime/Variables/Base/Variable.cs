@@ -7,9 +7,6 @@ using Object = UnityEngine.Object;
 
 namespace SOA.Base
 {
-   
-    
-
     public abstract class Variable<T, E, EE> : ScriptableObject, ISerializationCallbackReceiver
         where EE : UnityEvent<T, T>, new() where E : UnityEvent<T>, new()
     {
@@ -151,6 +148,11 @@ namespace SOA.Base
         {
             var removedUse = _uses.Remove(container, reference);
             return removedUse;
+        }
+
+        public virtual void ClearUses()
+        {
+            _uses?.Clear();
         }
 
         #endregion

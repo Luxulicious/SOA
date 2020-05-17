@@ -102,6 +102,11 @@ namespace SOA.Base
 
         public List<ReferenceUse> Uses => _uses;
 
+        public void Clear()
+        {
+            _uses?.Clear();
+        }
+
         public void Add(IRegisteredReferenceContainer container, IRegisteredReference reference)
         {
             //If collection is empty

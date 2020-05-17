@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -142,7 +143,7 @@ namespace SOA.Base
                 var changedMode = prevIsPlaying != isPlaying;
                 if (changedMode)
                 {
-                    RefreshUses();
+                    ClearUses();
                     prevIsPlaying = isPlaying;
                 }
 
@@ -175,15 +176,53 @@ namespace SOA.Base
             }
         }
 
-        private static void RefreshUses()
+        private void RefreshUses()
         {
+            //Get target variable
+            var variable = serializedObject.targetObject as Variable<T, E, EE>;
+            //Clear out previous uses
+            variable?.ClearUses();
+            //Refresh asset database
             AssetDatabase.Refresh(ImportAssetOptions.Default);
-            var containers =
+            //Get containers
+            //Get MonoBehaviour containers
+            var nonPrefabMonoBehaviourContainers =
                 FindObjectsOfType<MonoBehaviour>().OfType<IRegisteredReferenceContainer>().ToList();
-            foreach (var container in containers)
-                container.Register();
+            //Get ScriptableObject containers
+            var scriptableObjectContainers = GetAllInstances<ScriptableObject>()
+                .Where(x => x is IRegisteredReferenceContainer);
+            //TODO Get Prefab MonoBehaviour containers
+            //...
+            //Re-register
+            foreach (var c in nonPrefabMonoBehaviourContainers)
+                c.Register();
+            foreach (var c in scriptableObjectContainers)
+                (c as IRegisteredReferenceContainer)?.Register();
+            //TODO Re-register Prefab MonoBehaviour containers
+            //...
         }
 
+        private void ClearUses()
+        {
+            //Get target variable
+            var variable = serializedObject.targetObject as Variable<T, E, EE>;
+            variable?.ClearUses();
+        }
+
+        //TODO Move this to extensions
+        public static T[] GetAllInstances<T>() where T : ScriptableObject
+        {
+            string[] guids = AssetDatabase.FindAssets("t:" + typeof(T).Name);
+            T[] a = new T[guids.Length];
+            for (int i = 0; i < guids.Length; i++) //TODO probably could get optimized 
+            {
+                string path = AssetDatabase.GUIDToAssetPath(guids[i]);
+                a[i] = AssetDatabase.LoadAssetAtPath<T>(path);
+            }
+
+            return a;
+        }
+        
         public virtual void DrawUses(IEnumerable<ReferenceUse> nonPrefabComponentUses, string header = "")
         {
             if (nonPrefabComponentUses != null)

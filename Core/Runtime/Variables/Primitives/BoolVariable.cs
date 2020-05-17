@@ -133,23 +133,21 @@ namespace SOA.Common.Primitives
             base.OnAfterDeserialize();
             _onAfterDeserializedEvent.Invoke();
             if (!_composite) return;
-            //Register as a container
-            Register();
             //Refresh connections to member values for when to update the composite
             _prevMemberValues.ForEach(x =>
             {
                 x.RemoveListenerFromOnValueChanged(UpdateCompositeValue);
-                x.GlobalValue.RemoveListenerFromOnAfterDeserializedEvent(UpdateCompositeValue);
+                x.GlobalValue?.RemoveListenerFromOnAfterDeserializedEvent(UpdateCompositeValue);
             });
             _memberValues.ForEach(x =>
             {
                 x.RemoveListenerFromOnValueChanged(UpdateCompositeValue);
-                x.GlobalValue.RemoveListenerFromOnAfterDeserializedEvent(UpdateCompositeValue);
+                x.GlobalValue?.RemoveListenerFromOnAfterDeserializedEvent(UpdateCompositeValue);
             });
             _memberValues.ForEach(x =>
             {
                 x.AddListenerToOnValueChanged(UpdateCompositeValue);
-                x.GlobalValue.AddListenerToOnAfterDeserializedEvent(UpdateCompositeValue);
+                x.GlobalValue?.AddListenerToOnAfterDeserializedEvent(UpdateCompositeValue);
             });
             _prevMemberValues = _memberValues;
             try
@@ -161,13 +159,6 @@ namespace SOA.Common.Primitives
                 Debug.LogError(e.Message, this);
             }
         }
-
-        public override void OnBeforeSerialize()
-        {
-            base.OnBeforeSerialize();
-            Register();
-        }
-
         #endregion
 
         #region Composite methods
@@ -392,17 +383,7 @@ namespace SOA.Common.Primitives
         #endregion
 
         #endregion
-
-        protected virtual void OnEnable()
-        {
-            Register();
-        }
-
-        protected virtual void OnDisable()
-        {
-            UnRegister();
-        }
-
+        
         public void UnRegister()
         {
             foreach (var memberValue in _memberValues)
