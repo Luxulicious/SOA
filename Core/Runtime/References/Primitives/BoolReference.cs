@@ -72,11 +72,6 @@ namespace SOA.Common.Primitives
                 _onValueChangedToTrueEvent.Invoke(true);
         }
 
-        public override void RefreshRegistrationsToGlobalValue()
-        {
-            base.RefreshRegistrationsToGlobalValue();
-        }
-
         public override void RefreshListenersToGlobalValueOnValueChangedEvents()
         {
             using (refreshListenersToGlobalValueOnValueChangedEventsMarker.Auto())
