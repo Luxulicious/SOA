@@ -4,7 +4,7 @@ using SOA.Base;
 using SOA.Common.Primitives;
 using SOA.Common.UnityEngine;
 using UnityEngine;
-using UnityEngine.Experimental.PlayerLoop;
+
 
 public class DirectionalBooleansToVector2 : MonoBehaviour
 {
