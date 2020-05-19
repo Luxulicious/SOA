@@ -1,5 +1,4 @@
 # Scriptable Object Architecture 
-<b>WARNING THIS PROJECT HAS NOT BEEN THOROUGHLY TESTED YET, USE AT YOUR OWN RISK.</b>
 
 ## What is SOA (Scriptable Object Architecture)?
 A package for creating an scriptable object based game architecture.
