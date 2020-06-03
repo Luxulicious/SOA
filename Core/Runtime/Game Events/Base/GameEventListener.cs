@@ -9,7 +9,7 @@ namespace SOA.Base
     public class GameEventListener : ISerializationCallbackReceiver
     {
         [SerializeField] protected GameEvent _gameEvent;
-        [SerializeField] protected UnityEvent _responses;
+        [SerializeField] protected UnityEvent _responses = new E();
         protected GameEvent _prevGameEvent;
 
 
