@@ -5,11 +5,13 @@ using UnityEngine.Events;
 
 namespace SOA.Base
 {
-    [Serializable]
+    [Serializable,
+     Obsolete(
+         "Game event listeners may be removed in the future, due to not being compatible with unity's new prefab workflow")]
     public class GameEventListener : ISerializationCallbackReceiver
     {
         [SerializeField] protected GameEvent _gameEvent;
-        [SerializeField] protected UnityEvent _responses = new E();
+        [SerializeField] protected UnityEvent _responses = new UnityEvent();
         protected GameEvent _prevGameEvent;
 
 
@@ -58,7 +60,7 @@ namespace SOA.Base
         public void OnBeforeSerialize()
         {
         }
-        
+
         public void OnAfterDeserialize()
         {
             _prevGameEvent?.RemoveAutoListener(InvokeResponses);

@@ -52,6 +52,7 @@ References:
 - References that are marked as dirty by unity will show 2 labels instead of 1
 
 Generation:
+- Temporarily disabled
 - Unknown namespaces also get filled in in using (ex: "using ;" which errors)
 - Have generation overwriting be selective per file...
 - Generation does not include new constructors in references
@@ -65,10 +66,10 @@ Attributes:
 ["LockPersistence"], [LockScope], [HideOnChange] etc...
 
 Events:
-- Add a standard component for event listeners
 - Display events in a graph
 - Provide stack trace for events
 - Provide an easy navigatable way through events
+- Game event listener components will not auto-listen correctly when used with a prefab
 
 Composite Variables:
 - Make member values be variable only
