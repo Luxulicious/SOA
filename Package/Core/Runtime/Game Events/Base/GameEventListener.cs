@@ -14,18 +14,35 @@ namespace SOA.Base
         [SerializeField] protected UnityEvent _responses = new UnityEvent();
         protected GameEvent _prevGameEvent;
 
-
         public void InvokeResponses()
         {
             _responses.Invoke();
         }
 
-
+        public GameEvent GameEvent
+        {
+            get { return _gameEvent;}
+            set
+            {
+                if (_gameEvent != value)
+                {
+                    _prevGameEvent = _gameEvent;
+                    _gameEvent = value;
+                    RefreshListeners();
+                }
+            }
+        }
+        
         public void OnBeforeSerialize()
         {
         }
 
         public void OnAfterDeserialize()
+        {
+            
+        }
+
+        private void RefreshListeners()
         {
             _prevGameEvent?.RemoveAutoListener(InvokeResponses);
             _gameEvent?.RemoveAutoListener(InvokeResponses);
@@ -41,6 +58,19 @@ namespace SOA.Base
         [SerializeField] protected E _responses;
         protected GE _prevGameEvent;
 
+        public GE GameEvent
+        {
+            get { return _gameEvent; }
+            set
+            {
+                if (_gameEvent != value)
+                {
+                    _prevGameEvent = _gameEvent;
+                    _gameEvent = value;
+                    RefreshListeners();
+                }
+            }
+        }
 
         protected virtual void InvokeResponses(T value)
         {
@@ -62,6 +92,11 @@ namespace SOA.Base
         }
 
         public void OnAfterDeserialize()
+        {
+            RefreshListeners();
+        }
+
+        private void RefreshListeners()
         {
             _prevGameEvent?.RemoveAutoListener(InvokeResponses);
             _gameEvent?.RemoveAutoListener(InvokeResponses);
